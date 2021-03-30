@@ -4,14 +4,14 @@ import PackageDescription
 
 
 let package = Package(
-    name: "ApodiniLIFXExample",
+    name: "SmartInfrastructure",
     platforms: [
         .macOS(.v10_15)
     ],
     products: [
         .executable(
-            name: "ApodiniLIFXExample",
-            targets: ["ApodiniLIFXExample"]
+            name: "SmartInfrastructure",
+            targets: ["SmartInfrastructure"]
         )
     ],
     dependencies: [
@@ -20,15 +20,14 @@ let package = Package(
             url: "https://github.com/Apodini/Apodini.git",
             .branch("develop")
         ),
-        .package(
-            name: "swift-nio-lifx",
-            url: "https://github.com/PSchmiedmayer/Swift-NIO-LIFX.git",
-            from: "0.1.1"
-        )
+        .package(name: "swift-argument-parser", url: "https://github.com/apple/swift-argument-parser", from: "0.3.2"),
+        .package(name: "swift-log", url: "https://github.com/apple/swift-log.git", from: "1.4.0"),
+        .package(name: "swift-nio", url: "https://github.com/apple/swift-nio.git", from: "2.25.1"),
+        .package(name: "swift-nio-ip", url: "https://github.com/PSchmiedmayer/Swift-NIO-IP.git", from: "0.0.1")
     ],
     targets: [
         .target(
-            name: "ApodiniLIFXExample",
+            name: "SmartInfrastructure",
             dependencies: [
                 .product(name: "Apodini", package: "Apodini"),
                 .product(name: "ApodiniJobs", package: "Apodini"),
@@ -41,12 +40,34 @@ let package = Package(
             name: "ApodiniLIFX",
             dependencies: [
                 .product(name: "Apodini", package: "Apodini"),
-                .product(name: "NIOLIFX", package: "swift-nio-lifx")
+                .target(name: "NIOLIFX")
+            ]
+        ),
+        .target(
+            name: "lifx",
+            dependencies: [
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "Logging", package: "swift-log"),
+                .target(name: "NIOLIFX")
+            ]
+        ),
+        .target(
+            name: "NIOLIFX",
+            dependencies: [
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "NIO", package: "swift-nio"),
+                .product(name: "NIOIP", package: "swift-nio-ip")
             ]
         ),
         .testTarget(
-            name: "ApodiniLIFXExampleTests",
-            dependencies: ["ApodiniLIFXExample"]
+            name: "NIOLIFXTests",
+            dependencies: [
+                .target(name: "NIOLIFX")
+            ]
+        ),
+        .testTarget(
+            name: "SmartInfrastructureTests",
+            dependencies: ["SmartInfrastructure"]
         )
     ]
 )

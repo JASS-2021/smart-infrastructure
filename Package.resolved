@@ -15,7 +15,7 @@
         "repositoryURL": "https://github.com/Apodini/Apodini.git",
         "state": {
           "branch": "develop",
-          "revision": "122225a04ac42dc9415df13fa1b5b6eec7f16daf",
+          "revision": "a6acb27a0a69749619210b464e4be45565c57b12",
           "version": null
         }
       },
@@ -422,15 +422,6 @@
           "branch": null,
           "revision": "598f56ec73fba0630a1b49c6ff97ac2e2d565a9e",
           "version": "0.0.1"
-        }
-      },
-      {
-        "package": "swift-nio-lifx",
-        "repositoryURL": "https://github.com/PSchmiedmayer/Swift-NIO-LIFX.git",
-        "state": {
-          "branch": null,
-          "revision": "d9481e065719b9dd095e95045bbb1bc62e31f56b",
-          "version": "0.1.1"
         }
       },
       {
