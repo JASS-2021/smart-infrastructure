@@ -9,6 +9,8 @@ RUN swift package resolve
 # The usual copying over
 COPY Sources ./Sources
 COPY Tests ./Tests
+RUN swift package resolve
+
 
 RUN swift build
 

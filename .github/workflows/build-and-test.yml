@@ -25,11 +25,44 @@ jobs:
       with:
         path: .build
         key: ${{ runner.os }}-focal-spm-cache-${{ hashFiles('Package.resolved') }}
+    
     - name: Check Swift version
       run: swift --version
+    
+    # create docker image
+    # push to DockerHub
+    # use vpn to get onto TUM network
+    # ssh into the RPi
+    # upload any updated image
+    # 
+    #
+    # - name: Docker build 
+    #   with:
+    #     INPUT_PATH: ../../
+    #   if: matrix.configuration == 'release'
+    #   run: docker run docker/github-actions build ${{ INPUT_PATH }}
+  
     - name: Build
       if: matrix.configuration == 'release'
       run: swift build --configuration ${{ matrix.configuration }}
+
     - name: Build & Test
       if: matrix.configuration == 'debug'
       run: swift test --configuration ${{ matrix.configuration }} --enable-test-discovery
+
+
+  push_to_registry:
+    name: Push Docker image to GitHub Packages
+    needs: [linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: JASS-2021/smart-infrastructure/webservice
+          tag_with_ref: true 
