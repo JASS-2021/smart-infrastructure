@@ -19,7 +19,7 @@ public final class LIFXConfiguration: Configuration {
     /// - Parameters:
     ///   - interfaceName: The IPv4 network interface that should be used.
     ///   - logLevel: The logging level used by the logger.
-    public init(interfaceName: String = "en0", logLevel: Logger.Level = .error) {
+    public init(interfaceName: String = "eth0", logLevel: Logger.Level = .error) {
         self.interfaceName = interfaceName
         self.logLevel = logLevel
     }
