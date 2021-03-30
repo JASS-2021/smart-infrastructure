@@ -65,6 +65,10 @@ struct LIFX: ParsableCommand {
                 print("✅ Discovered the following devices:")
                 for device in lifxDeviceManager.devices {
                     print("   💡 \(device.label) (\(device.group), \(device.location)): \(device.powerLevel.wrappedValue == .enabled ? "On" : "Off")")
+                    print("           💡  (\(device.description) ")
+                    print("           💡  (\(device.hardwareInfo) ")
+                    print("           💡  (\(device.firmware) ")
+
                 }
             }
         

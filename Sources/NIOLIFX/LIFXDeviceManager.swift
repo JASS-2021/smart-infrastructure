@@ -94,6 +94,7 @@ public final class LIFXDeviceManager {
                                    service: stateServiceMessage.service,
                                    getValuesUsing: self)
             
+            
             if let oldDevice = self.devices.first(where: { $0 == newDevice }) {
                 newDevice.updateCachedValues(from: oldDevice)
             }

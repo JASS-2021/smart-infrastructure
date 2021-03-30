@@ -35,29 +35,16 @@ class InfraredLight: ColorLight {
         - infraredPowerLevel: The power level of the Infrared channel.
      - precondition: The lenght of the UTF-8 encoding of the `label` MUST be less or equal to 32 bytes.
      */
-    init(service: Service,
-         port: UInt32,
-         hardwareInfo: HardwareInfo,
-         firmware: Firmware,
-         wifiInfo: TransmissionInfo,
-         powerLevel: PowerLevel,
-         runtimeInfo: RuntimeInfo,
-         label: String,
-         location: Location,
-         group: Group,
+    init(address: UInt64,
+         service: Service,
+         getValuesUsing deviceManager: LIFXDeviceManager,
          color: LIFXColor,
          infraredPowerLevel: UInt16) {
         self.infraredPowerLevel = infraredPowerLevel
-        super.init(service: service,
-                   port: port,
-                   hardwareInfo: hardwareInfo,
-                   firmware: firmware,
-                   wifiInfo: wifiInfo,
-                   powerLevel: powerLevel,
-                   runtimeInfo: runtimeInfo,
-                   label: label,
-                   location: location,
-                   group: group,
+        
+        super.init(address: address,
+                   service: service,
+                   getValuesUsing: deviceManager,
                    color: color)
     }
 }
