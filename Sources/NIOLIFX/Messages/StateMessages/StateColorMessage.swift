@@ -1,11 +1,15 @@
 import NIO
 
 /**
- LabelMessage
+ StateColorMessage
  
- Message that carries a `String`-label payload.
+ Message that carries a `LIFXColor` and a `Label` payload.
  */
 class StateColorMessage: Message {
+    
+    override class var type: UInt16 {
+        107
+    }
     /**
      The `String`-label carried by the message.
      */
