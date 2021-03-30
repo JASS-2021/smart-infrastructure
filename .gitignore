@@ -1,5 +1,8 @@
 # Apodini .gitignore File
 
+# Jetbrains IDE
+.idea
+
 # Swift Package Manager
 *.xcodeproj
 .swiftpm
