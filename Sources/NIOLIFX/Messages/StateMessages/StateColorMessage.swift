@@ -98,27 +98,4 @@ class StateColorMessage: Message {
                    requestResponse: requestResponse,
                    sequenceNumber: sequenceNumber)
     }
-    
-    /*
-     Payload written in this write function:
-     
-     ```
-     1  1  1  1  1  1
-     0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-     | HUE | SAT | BRI | KEL | RES | POW |           |
-     +--+--+--+--+--+--+--+--+--+--+--+--+           +
-     |                                               |
-     +                 LABEL             +--+--+--+--+
-     |                                   |     RE-   |
-     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-     |  SERVED   |                EMPTY              |
-     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-     ```
-     */
-    override func writeData(inBuffer buffer: inout ByteBuffer) {
-        precondition(Array(label.utf8).count == 32, "The `label`'s UTF-8 byte representation must be 32 bytes long.")
-        
-        buffer.writeString(label)
-    }
 }
