@@ -341,6 +341,9 @@ excluded: # paths to ignore during linting. Takes precedence over `included`.
   - .build
   - .swiftpm
   - R.generated.swift
+  - Sources/NIOLIFX
+  - Sources/lifx
+  - Tests/NIOLIFXTests
 
 closure_body_length: # Closure bodies should not span too many lines.
   - 35 # warning - default: 20
@@ -367,6 +370,7 @@ identifier_name:
     - id
     - ok
     - ip
+    - on
 
 large_tuple: # Tuples shouldn't have too many members. Create a custom type instead.
   - 2 # warning - default: 2
