@@ -33,20 +33,22 @@ struct LIFX: ParsableCommand {
         logger.logLevel = logLevel
         
         let networkInterface = getNetworkInterface(logger)
-        let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 2)
 
         let lifxDeviceManager = try LIFXDeviceManager(using: networkInterface, on: eventLoopGroup, logLevel: logLevel)
         
-        var on: Bool = initialAction == .on ? true : false
+        let colors: [ColorLight.LIFXColor] = [.green, .yellow, .red]
+        let colorDescriptions = ["green", "yellow", "red"]
+        var index = 0
         
         print(
             """
             👋 Welcome to the LIFXNIO example!
 
                The example sends out discovery messages to detect any LIFX devices in your network when you press the return key.
-               After detecting devices all detected devices are tooggled on or off. The next time devices are discovered they will be turned \(on ? "on" : "off").
+               After detecting devices all detected devices are tooggled on or off. The next time devices are discovered they will be turned \(colorDescriptions[index]).
             
-               Press return to discover devices and tooggle them \(on ? "on" : "off"). Press return again to power all devices \(!on ? "on" : "off").
+               Press return to discover devices and tooggle them \(colorDescriptions[index]). Press return again to power all devices \(colorDescriptions[index+1]).
             """
         )
         
@@ -65,15 +67,20 @@ struct LIFX: ParsableCommand {
                 print("✅ Discovered the following devices:")
                 for device in lifxDeviceManager.devices {
                     print("   💡 \(device.label) (\(device.group), \(device.location)): \(device.powerLevel.wrappedValue == .enabled ? "On" : "Off")")
+                    print("           💡  (\(device.description) ")
+                    print("           💡  (\(device.hardwareInfo) ")
+                    print("           💡  (\(device.firmware) ")
                 }
             }
         
         while let _ = readLine(strippingNewline: false) {
-            print("⚙️ Turning all devices \(on ? "on" :  "off")")
+            print("⚙️ Turning all devices \(colorDescriptions[index])")
             for device in lifxDeviceManager.devices {
-                _ = try device.set(powerLevel: on ? .enabled : .standby).wait()
-                on.toggle()
+                _ = device.set(lifxColor: colors[index])
             }
+            
+            index += 1
+            index = index % colors.count
         }
         
         try eventLoopGroup.syncShutdownGracefully()
