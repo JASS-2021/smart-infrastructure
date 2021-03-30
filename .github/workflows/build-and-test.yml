@@ -9,14 +9,14 @@ on:
       - trunk
 
 jobs:
-  linux:
+  testing:
     name: Linux focal ${{ matrix.configuration }} test build
     container:
       image: swift:focal
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        configuration: [debug, release]
+        configuration: [debug] #, release
     steps:
     - uses: actions/checkout@v2
     - name: Install libsqlite3
@@ -35,16 +35,10 @@ jobs:
     # ssh into the RPi
     # upload any updated image
     # 
-    #
-    # - name: Docker build 
-    #   with:
-    #     INPUT_PATH: ../../
-    #   if: matrix.configuration == 'release'
-    #   run: docker run docker/github-actions build ${{ INPUT_PATH }}
   
-    - name: Build
-      if: matrix.configuration == 'release'
-      run: swift build --configuration ${{ matrix.configuration }}
+    # - name: Build
+    #   if: matrix.configuration == 'release'
+    #   run: swift build --configuration ${{ matrix.configuration }}
 
     - name: Build & Test
       if: matrix.configuration == 'debug'
@@ -53,16 +47,16 @@ jobs:
 
   push_to_registry:
     name: Push Docker image to GitHub Packages
-    needs: [linux]
+
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Push to GitHub Packages
-        uses: docker/build-push-action@v1
+        uses: docker/build-push-action@v2
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
-          repository: JASS-2021/smart-infrastructure/webservice
+          repository: jass-2021/smart-infrastructure/webservice
           tag_with_ref: true 
