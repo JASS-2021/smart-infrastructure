@@ -1,4 +1,4 @@
-# Apodini LIFX Example
+# Apodini LIFX smart infrastructure
 
 This repository includes an example Apodini web service that can be used to control LIFX smart lights using [NIO LIFX](https://github.com/PSchmiedmayer/Swift-NIO-LIFX).  
 
