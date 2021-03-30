@@ -47,8 +47,10 @@ jobs:
       if: matrix.configuration == 'debug'
       run: swift test --configuration ${{ matrix.configuration }} --enable-test-discovery
 
-  # NEW JOB TO RUN IN PARALLEL WITH 'Testing'
+
+  # NEW JOB TO RUN after 'testing'
   push_to_registry:
+    needs: [testing]
     name: Push Docker image to GitHub Packages
 
     runs-on: ubuntu-latest
