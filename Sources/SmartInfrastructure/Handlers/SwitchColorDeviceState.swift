@@ -16,9 +16,7 @@ struct SwitchColorDeviceState: Handler {
                 reason: "No device with the name \"\(name)\" was found"
             )
         }
-        
-//        let lifxColor = ColorLight.LIFXColor(color)
-        
+                
         return device.set(lifxColor: ColorLight.LIFXColor(color.rawValue))
             .flatMap { _ in
                 device.state.load()

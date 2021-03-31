@@ -26,26 +26,11 @@ extension ColorLight.LIFXColor {
     
     public init(_ colorString: String) {
         switch colorString {
-        case "red":
-            self = ColorLight.LIFXColor(
-                color: Color.init(red: 1.0, green: 0.0, blue: 0.0),
-                colorTemperature: 5000)
-        case "yellow":
-            self = ColorLight.LIFXColor(
-                color: Color.init(red: 1.0, green: 1.0, blue: 0.0),
-                colorTemperature: 5000)
-        case "green":
-            self = ColorLight.LIFXColor(
-                color: Color.init(red: 0.0, green: 1.0, blue: 0.0),
-                colorTemperature: 5000)
-        case "standby":
-            self = ColorLight.LIFXColor(
-                color: Color.init(red: 1.0, green: 0.0, blue: 1.0),
-                colorTemperature: 5000)
-        default:
-            self = ColorLight.LIFXColor(
-                color: Color.init(red: 1.0, green: 1.0, blue: 1.0),
-                colorTemperature: 5000)
+        case "red": self = .red
+        case "yellow": self = .yellow
+        case "green": self = .green
+        case "standby": self = .standby
+        default: self = .standby
         }
     }
     
