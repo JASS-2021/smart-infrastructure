@@ -9,7 +9,7 @@ extension Device {
          The `Device` is in standby mode (0).
          */
         case standby = 0
-        
+
         /**
          The `Device` is powered on (65535).
          */
@@ -57,18 +57,18 @@ extension ByteBuffer {
      */
     func getPowerLevel(at index: Int) throws -> (powerLevel: Device.PowerLevel, byteSize: Int) {
         precondition(index >= 0, "index must not be negative")
-        
+
         guard let rawPowerLevel: Device.PowerLevel.RawValue = getInteger(at: index, endianness: .little) else {
             throw ByteBufferError.notEnoughtReadableBytes
         }
-        
+
         guard let powerLevel = Device.PowerLevel(rawValue: rawPowerLevel) else {
             throw ByteBufferError.notEnoughtReadableBytes
         }
-        
+
         return (powerLevel, MemoryLayout<Device.PowerLevel.RawValue>.size)
     }
-    
+
     /**
      Write `powerLevel` into this `ByteBuffer`, moving the writer index forward appropriately.
      
