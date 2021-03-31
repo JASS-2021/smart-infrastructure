@@ -119,7 +119,8 @@ jobs:
             docker pull ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$VERSION
             OLDPORT="$(sed -n 's/proxy_pass http\:\/\/?:(.+?)\:(.+?)/\1/p' conf.d/nginx.conf)"
             OLDCID="$(sed -n 's/proxy_pass http\:\/\/(.+?)\:(.+?)/\1/p' conf.d/nginx.conf)"
-            NOTISINIT=[ $OLDCID != "127.0.0.1" ]
+            ISINIT=false
+            "$OLDCID" == "127.0.0.1" && ISINIT=true
             OLDURL="http://$OLDCID:$OLDPORT"
             OLDIMGID=$(docker inspect --format='{{.Image}}' $OLDCID)
 
@@ -132,9 +133,9 @@ jobs:
 
             docker exec infrastructure_nginx /etc/init.d/nginx reload
 
-            NOTISINIT && docker container stop $OLDCID
-            NOTISINIT && docker container rm $OLDCID
-            NOTISINIT && docker image rm $OLDIMGID
+            ISINIT || docker container stop $OLDCID
+            ISINIT || docker container rm $OLDCID
+            ISINIT || docker image rm $OLDIMGID
           # Hostname or IP address of the server.
           host: 131.159.38.52
           # Username for authentication.
