@@ -56,7 +56,7 @@ jobs:
     name: Push Docker image to GitHub Packages
 
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/headers/trunk'
+    if: github.ref == 'refs/heads/trunk'
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -90,7 +90,7 @@ jobs:
     name: Deploy Docker image to the Raspberry
 
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/headers/trunk'
+    if: github.ref == 'refs/heads/trunk'
     steps:
       - name: Install vpnc
         run: sudo apt-get install vpnc
@@ -119,7 +119,7 @@ jobs:
             docker pull ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$VERSION
             OLDPORT="$(sed -n 's/proxy_pass http\:\/\/?:(.+?)\:(.+?)/\1/p' conf.d/nginx.conf)"
             OLDCID="$(sed -n 's/proxy_pass http\:\/\/(.+?)\:(.+?)/\1/p' conf.d/nginx.conf)"
-            NOTISINIT=($OLDCID!="127.0.0.1")
+            NOTISINIT=[ $OLDCID != "127.0.0.1" ]
             OLDURL="http://$OLDCID:$OLDPORT"
             OLDIMGID=$(docker inspect --format='{{.Image}}' $OLDCID)
 
