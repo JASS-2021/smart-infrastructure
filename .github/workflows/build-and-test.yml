@@ -22,6 +22,8 @@ jobs:
         configuration: [debug] #, release
     steps:
     - uses: actions/checkout@v2
+    - name: Debug
+      run: echo "${{ github.ref }}"
     - name: Install libsqlite3
       run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
     - uses: actions/cache@v2
