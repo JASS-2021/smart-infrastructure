@@ -7,8 +7,8 @@ import NIO
 final class MessageDecoder: ChannelInboundHandler {
     typealias InboundIn = AddressedEnvelope<ByteBuffer>
     typealias InboundOut = AddressedEnvelope<Message>
-    
-    
+
+
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         do {
             let envelope = self.unwrapInboundIn(data)
@@ -16,21 +16,21 @@ final class MessageDecoder: ChannelInboundHandler {
             // The index of the first byte is now 0 and allows the decoder the decode compressed domain labels.
             var buffer = envelope.data.slice()
             // Read the message from the buffer.
-            
-            
+
+
             LIFXDeviceManager.logger.debug(
-                """
-                Recieved from \(envelope.remoteAddress.description):
-                [\n\(
-                    (0..<buffer.readableBytes)
-                        .compactMap({ buffer.getInteger(at: buffer.readerIndex.advanced(by: $0), as: UInt8.self) })
-                        .enumerated()
-                        .map({ (index: Int, byte: UInt8) -> String in "    Byte \(index): 0x\(String(byte, radix: 16, uppercase: true))" })
-                        .joined(separator: "\n")
-                )\n]
-                """
+                    """
+                    Recieved from \(envelope.remoteAddress.description):
+                    [\n\(
+                            (0..<buffer.readableBytes)
+                                    .compactMap({ buffer.getInteger(at: buffer.readerIndex.advanced(by: $0), as: UInt8.self) })
+                                    .enumerated()
+                                    .map({ (index: Int, byte: UInt8) -> String in "    Byte \(index): 0x\(String(byte, radix: 16, uppercase: true))" })
+                                    .joined(separator: "\n")
+                    )\n]
+                    """
             )
-            
+
             let message = try buffer.readMessage()
             // The decoded message is passed inbound to the next `ChannelInboundHandler`.
             context.fireChannelRead(wrapInboundOut(AddressedEnvelope(remoteAddress: envelope.remoteAddress, data: message)))

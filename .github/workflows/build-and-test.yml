@@ -54,13 +54,12 @@ jobs:
     name: Push Docker image to GitHub Packages
 
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/headers/trunk'
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Build image
-        run: | 
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          [ "$VERSION" == "trunk" ] && docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
 
       - name: Log into registry
         # This is where you will update the PAT to GITHUB_TOKEN
@@ -82,3 +81,68 @@ jobs:
           echo VERSION=$VERSION
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
+
+  # DEPLOY
+  deploy_to_raspberry:
+    needs: [push_to_registry]
+    name: Deploy Docker image to the Raspberry
+
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/headers/trunk'
+    steps:
+      - name: Install vpnc
+        run: sudo apt-get install vpnc
+      - name: Configure LRZ VPN
+        run: |
+          echo "${{ secrets.MWN_VPNC_CONFIG }}" > lrz.conf
+          sudo mkdir -p /etc/vpnc
+          sudo mv lrz.conf /etc/vpnc/
+          sudo chmod 600 /etc/vpnc/lrz.conf
+      - name: Connect VPN
+        run: sudo vpnc lrz
+      - name: Ping sophos.lrz.de (only accessible inside MWN)
+        id: vpn-test
+        run: |
+          ping -c 5 sophos.lrz.de
+          echo "::set-output name=success::true"
+      - name: Deploy with SSH
+        uses: fifsky/ssh-action@v0.0.5
+        with:
+          # Command to execute on the remote server.
+          command: |
+            cd ~/infrastructure
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+            echo VERSION=$VERSION
+            docker pull ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$VERSION
+            OLDPORT="$(sed -n 's/proxy_pass http\:\/\/?:(.+?)\:(.+?)/\1/p' conf.d/nginx.conf)"
+            OLDCID="$(sed -n 's/proxy_pass http\:\/\/(.+?)\:(.+?)/\1/p' conf.d/nginx.conf)"
+            NOTISINIT=($OLDCID!="127.0.0.1")
+            OLDURL="http://$OLDCID:$OLDPORT"
+            OLDIMGID=$(docker inspect --format='{{.Image}}' $OLDCID)
+
+            NEWPORT=($OLRDPORT=="8091"?"8092":"8091")
+            NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_NAME:$VERSION -e SYNCHOST=$OLDURL)
+
+            sleep 1
+
+            sed -i -e "s/(proxy_pass http\:\/\/)(.+?)\:(.+?)/\1$NEWCID\:$NEWPORT/" conf.d/nginx.conf
+
+            docker exec infrastructure_nginx /etc/init.d/nginx reload
+
+            NOTISINIT && docker container stop $OLDCID
+            NOTISINIT && docker container rm $OLDCID
+            NOTISINIT && docker image rm $OLDIMGID
+          # Hostname or IP address of the server.
+          host: 131.159.38.52
+          # Username for authentication.
+          user: ubuntu
+          # Port number of the server.
+          port: 10010
+          # String that contains a private key for either key-based or hostbased user authentication (OpenSSH format)
+          key: ${{ secrets.TUM_RBP_1_SECRET }}
+      - name: Disconncet VPN
+        run: |
+          sudo vpnc-disconnect
+          sudo rm /etc/vpnc/lrz.conf
+        if: ${{ always() && (steps.vpn-test.outputs.success == 'true') }}
