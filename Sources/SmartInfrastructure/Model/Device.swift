@@ -13,16 +13,27 @@ struct Device: Content {
     let address: String
     let name: String?
     let state: DeviceState?
+    let colorState: ColorLightState?
     
-    init(_ device: NIOLIFX.Device) {
+    init(_ device: NIOLIFX.ColorLight) {
         self.address = device.address.macAddressString
         self.name = device.label.wrappedValue?.replacingOccurrences(of: "\0", with: "")
         
         guard let powerLevel = device.powerLevel.wrappedValue else {
             self.state = nil
+            guard let colorState = device.state.wrappedValue else {
+                self.colorState = nil
+                return
+            }
+            self.colorState = ColorLightState(colorState.color)
             return
         }
-        
         self.state = DeviceState(powerLevel)
+
+        guard let colorState = device.state.wrappedValue else {
+            self.colorState = nil
+            return
+        }
+        self.colorState = ColorLightState(colorState.color)
     }
 }

@@ -14,8 +14,8 @@ extension ColorLight {
      */
     public struct State {
         public let color: ColorLight.LIFXColor
-        let powerLevel: ColorLight.PowerLevel
-        let label: String
+        let powerLevel: ColorLight.PowerLevel?
+        let label: String?
     }
 }
 

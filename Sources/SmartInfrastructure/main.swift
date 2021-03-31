@@ -25,6 +25,7 @@ struct ExampleWebService: WebService {
                 .operation(.create)
         }
         DevicesComponents()
+        ColorLightComponents()
     }
 }
 

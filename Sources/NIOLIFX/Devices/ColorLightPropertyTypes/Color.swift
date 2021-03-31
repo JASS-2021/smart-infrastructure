@@ -1,7 +1,7 @@
 /**
  An object that stores color data and opacity (alpha value).
  */
-struct Color {
+struct Color: Equatable {
     /**
      The red component of the `Color` object.
      
