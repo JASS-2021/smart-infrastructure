@@ -113,10 +113,10 @@ extension ByteBuffer {
     }
     
     /**
-     Write `powerLevel` into this `ByteBuffer`, moving the writer index forward appropriately.
+     Write `Color` into this `ByteBuffer`, moving the writer index forward appropriately.
      
      - parameters:
-        - powerLevel: The `Device.PowerLevel` to write.
+        - color: The `ColorLight.Color` to write.
      */
     mutating func write(color: ColorLight.LIFXColor) {
         let rawHue = UInt16(clamping: Int(Double(color.color.hue) * Double(UInt16.max) / 360.0))

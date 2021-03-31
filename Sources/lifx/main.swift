@@ -37,8 +37,8 @@ struct LIFX: ParsableCommand {
 
         let lifxDeviceManager = try LIFXDeviceManager(using: networkInterface, on: eventLoopGroup, logLevel: logLevel)
         
-        let colors: [ColorLight.LIFXColor] = [.green, .yellow, .red]
-        let colorDescriptions = ["green", "yellow", "red"]
+        let colors: [ColorLight.LIFXColor] = [.green, .yellow, .red, .yellow]
+        let colorDescriptions = ["green", "yellow", "red", "yellow"]
         var index = 0
         
         print(
@@ -67,9 +67,6 @@ struct LIFX: ParsableCommand {
                 print("✅ Discovered the following devices:")
                 for device in lifxDeviceManager.devices {
                     print("   💡 \(device.label) (\(device.group), \(device.location)): \(device.powerLevel.wrappedValue == .enabled ? "On" : "Off")")
-                    print("           💡  (\(device.description) ")
-                    print("           💡  (\(device.hardwareInfo) ")
-                    print("           💡  (\(device.firmware) ")
                 }
             }
         
