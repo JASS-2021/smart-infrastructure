@@ -19,7 +19,7 @@ struct Device: Content {
         self.address = device.address.macAddressString
         self.name = device.label.wrappedValue?.replacingOccurrences(of: "\0", with: "")
         
-        defer{
+        defer {
             if let colorState = device.state.wrappedValue {
                 self.colorState = ColorLightState(colorState.color)
             } else {

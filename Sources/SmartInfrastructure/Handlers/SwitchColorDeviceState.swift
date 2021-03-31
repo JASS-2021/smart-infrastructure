@@ -22,6 +22,5 @@ struct SwitchColorDeviceState: Handler {
                 device.state.load()
             }
             .transform(to: Device(device))
-        
     }
 }
