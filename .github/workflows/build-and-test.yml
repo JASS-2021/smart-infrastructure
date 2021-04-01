@@ -43,22 +43,8 @@ env:
 
 # Jobs the pipeline is supposed to run #
 jobs:
-
+  
   # Job # 1: #
-  prereqs: 
-    # Used for debugging, sanity checks, and installing apt-utils #
-    name: Prerequisite install apt-utils 
-    runs-on: ubuntu-latest
-
-    steps:
-      # GitHub Action to fetch a shallow clone of various dependencies #
-      - uses: actions/checkout@v2
-  
-      # Is currently not being used? We used this to fix (github.ref == ??) boolean bug #
-      - name: Debug
-        run: echo "${{ github.ref }}"
-  
-  # Job # 2: #
   test_build:   
     # Is used to install libsqlite3 and run any identified tests #
     name: Linux test build
@@ -80,7 +66,7 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Install apt-utils
-        run: sudo apt-get update -y && sudo apt-get install -y apt-utils
+      run: apt-get update -y && apt-get install -y apt-utils
 
     # Dependency #
     - name: Install libsqlite3
@@ -127,7 +113,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install apt-utils
-        run: sudo apt-get update -y && sudo apt-get install -y apt-utils
+        run: apt-get update -y && apt-get install -y apt-utils
 
       - name: Build image
         # Build Docker image jass-smart-infrastructure-webservice:COMMIT_ID #
