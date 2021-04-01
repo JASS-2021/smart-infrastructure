@@ -113,6 +113,7 @@ jobs:
       cred-secure: ${{ steps.run_cred_helper_sh.outputs.cred-secure }}
 
     steps:
+      - uses: actions/checkout@v2 
       - name: Run sh script
         run: |
           chmod +x cred_helper.sh
