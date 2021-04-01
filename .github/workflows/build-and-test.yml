@@ -46,20 +46,12 @@ jobs:
 
   # Job # 1: #
   test_build:   
-    # Is used to install libsqlite3 and run any identified tests #
     name: Linux test build
 
-    # No idea why we need this #
+    # Setup build environment #
     container:
       image: swift:focal
     runs-on: ubuntu-latest
-    # strategy:
-    #   matrix:
-    #     configuration: [debug] #, release 
-    #                            # (commented out because we copied over from Paul's 
-    #                            # ApodiniExample code)
-
-    # libsqlite3 outputs warnings that it needs apt-utils, so preinstall apt-utils: #
 
     steps:
 
@@ -78,23 +70,17 @@ jobs:
         path: .build
         key: ${{ runner.os }}-focal-spm-cache-${{ hashFiles('Package.resolved') }}
 
-    # Commented out for now, as we only want to be able to run tests.
-    # - name: Build
-    #   if: matrix.configuration == 'release'
-    #   run: swift build --configuration ${{ matrix.configuration }}
-
     - name: Check Swift version
       # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
       run: swift --version
 
-    - name: Build & Test # Should this just be named `Test`?
-      # Not sure why it works, but it works.
+    - name: Build & Test
       run: swift test --configuration debug --enable-test-discovery
 
   # Job # 3: #
   build_and_push_to_registry:
     # Only executed after codebase passes all tests #
-    # needs: [test_build]
+    needs: [test_build]
 
     # Build image and push to GitHub registry if on correct branch #
     name: Build and Push Docker Image # to GitHub Container Registry
