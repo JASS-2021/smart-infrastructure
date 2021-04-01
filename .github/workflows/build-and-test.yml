@@ -133,6 +133,7 @@ jobs:
       - name: Log into registry
         # # Log on to GitHub Container Registry #
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin && (echo ::set-output name=logged_in::'true')
+        id: logging-in
 
       - name: Push image
         # Push image onto the registry #
@@ -169,7 +170,7 @@ jobs:
           docker push $IMAGE_ID:$VERSION
 
       - name: Log out of registry
-        if: $logged_in == 'true'
+        if: steps.logging_in.outputs.logged_in == 'true'
         run: docker logout ghcr.io 
 
   # Job # 4: #
