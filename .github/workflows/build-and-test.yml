@@ -104,9 +104,6 @@ jobs:
     # if this conditional fails, none of the steps are executed #
     if: github.ref == 'refs/heads/trunk'
 
-    outputs:
-      logged_in: 'false'
-
     steps:
 
       - name: Install apt-utils
@@ -122,8 +119,7 @@ jobs:
 
       - name: Log into registry
         # # Log on to GitHub Container Registry #
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin && (echo ::set-output name=logged_in::'true')
-        id: logging-in
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push image
         # Push image onto the registry #
@@ -160,7 +156,6 @@ jobs:
           docker push $IMAGE_ID:$VERSION
 
       - name: Log out of registry
-        if: ${{ steps.logging_in.outputs.logged_in }}
         run: docker logout ghcr.io 
 
   # Job # 5: #     ## DEPLOY ##
