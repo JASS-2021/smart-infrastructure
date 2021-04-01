@@ -18,7 +18,7 @@ struct KeyStore: EnvironmentAccessible {
 
 struct DiscoveryJob: Job {
     @Environment(\.lifxDeviceManager) var lifxDeviceManager: LIFXDeviceManager
-
+    
     func run() {
         lifxDeviceManager.discoverDevices()
     }
