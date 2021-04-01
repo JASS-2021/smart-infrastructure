@@ -237,7 +237,7 @@ jobs:
           # Command to execute on the remote server, i.e. another mess 
           command: |
             
-            echo "${{ INPUT_POST }}"
+            echo "${{ INPUT_HOST }}"
 
             # cd into smart-infrastructure directory #
             cd ~/infrastructure
