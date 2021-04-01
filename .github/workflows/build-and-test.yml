@@ -188,6 +188,9 @@ jobs:
             OLDPORT="$(grep -hnr 'proxy_pass' $NGINX_CONFIG_PATH | sed -r 's/.*?proxy_pass http\:\/\/.+?\:([[:digit:]]+).*/\1/')"
             OLDCID="$(grep -hnr 'proxy_pass' $NGINX_CONFIG_PATH | sed -r 's/.*?proxy_pass http\:\/\/(.+?)\:[[:digit:]]+.*/\1/')"
 
+            echo $OLDCID
+            echo $OLDPORT
+
             # Initialise ISINIT as false.
             ISINIT=false
             # if container hasn't been set up yet, then OLDCID is just IP of localhost.#
@@ -198,7 +201,7 @@ jobs:
             OLDURL="http://$OLDCID:$OLDPORT"
             # Set the old image to the id of the one container we can
             # find on running docker inspect
-            OLDIMGID=$(docker inspect --format='{{.Image}}' $OLDCID)
+            $ISINIT || OLDIMGID=$(docker inspect --format='{{.Image}}' $OLDCID)
 
             # --------------------------------------------------------
             # CREATE THE NEW CONTAINER'S DETAILS:
@@ -207,14 +210,15 @@ jobs:
             NEWPORT=($OLDPORT=="8091"?"8092":"8091")
             # New container id is whatever id we get when running the newest image,
             # after syncing up with current container.
-            # NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_NAME:$VERSION -e SYNCHOST=$OLDURL)
+            $ISINIT || NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_NAME:$VERSION -e SYNCHOST=$OLDURL)
+            $ISINIT && NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_NAME:$VERSION)
 
             # ... here we are waiting for the sync to happen.
             # How long does that take? 1 second?
             sleep 1
 
             # Regex the new URL to ...?
-            sed -r -i -e "s/(proxy_pass http://)(.+?):(.+?)/\1$NEWCID\:$NEWPORT/" $NGINX_CONFIG_PATH
+            sed -ri "s/(.*?proxy_pass http\:\/\/)(.+?)\:([[:digit:]]+)(.*)/\1$NEWCID\:$NEWPORT\5/" $NGINX_CONFIG_PATH
 
             # --------------------------------------------------------
 
