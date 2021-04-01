@@ -81,6 +81,8 @@ jobs:
 
     steps:
 
+    - uses: actions/checkout@v2
+
     # Dependency #
     - name: Install libsqlite3
       run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
@@ -102,7 +104,6 @@ jobs:
 
     - name: Build & Test # Should this just be named `Test`?
       # Not sure why it works, but it works.
-        # if: matrix.configuration == 'debug'
       run: swift test --configuration debug --enable-test-discovery
 
   # Job # 3: #
