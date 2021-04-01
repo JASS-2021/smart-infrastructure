@@ -101,7 +101,7 @@ jobs:
 
       - name: Build image
         # Build Docker image jass-smart-infrastructure-webservice:COMMIT_ID #
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+        run: docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }} --label "runnumber=${GITHUB_RUN_ID}"
 
       - name: Log into registry
         # # Log on to GitHub Container Registry #
@@ -111,7 +111,7 @@ jobs:
         # Push image onto the registry #
         run: |
           # Creating the image_id we want
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
 
           # Change all uppercase to lowercase to follow convention of image_id
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
@@ -171,7 +171,7 @@ jobs:
             # log on into docker using github secrets #
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            REGISTRY_ADDR=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest
+            REGISTRY_ADDR=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
 
             # Change all uppercase to lowercase to follow convention of repository name
             REGISTRY_ADDR=$(echo $REGISTRY_ADDR | tr '[A-Z]' '[a-z]')
@@ -207,11 +207,11 @@ jobs:
             # CREATE THE NEW CONTAINER'S DETAILS:
 
             # New port is the one that is not the old port's
-            NEWPORT=($OLDPORT=="8091"?"8092":"8091")
+            ([ $OLDPORT == "8090" ] && NEWPORT=8092) || NEWPORT=8091
             # New container id is whatever id we get when running the newest image,
             # after syncing up with current container.
-            $ISINIT || NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_NAME:$VERSION -e SYNCHOST=$OLDURL)
-            $ISINIT && NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_NAME:$VERSION)
+            $ISINIT || NEWCID=$(docker run -d -p $NEWPORT:8080 ${{ env.IMAGE_NAME }}:latest -e SYNCHOST=$OLDURL)
+            $ISINIT && NEWCID=$(docker run -d -p $NEWPORT:8080 ${{ env.IMAGE_NAME }}:latest)
 
             # ... here we are waiting for the sync to happen.
             # How long does that take? 1 second?
