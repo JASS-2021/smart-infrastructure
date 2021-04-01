@@ -96,14 +96,14 @@ jobs:
     #   if: matrix.configuration == 'release'
     #   run: swift build --configuration ${{ matrix.configuration }}
     
+    - name: Check Swift version
+      # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
+      run: swift --version
+
     - name: Build & Test # Should this just be named `Test`?
       # Not sure why it works, but it works.
         # if: matrix.configuration == 'debug'
       run: swift test --configuration debug --enable-test-discovery
-
-    - name: Check Swift version
-        # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
-      run: swift --version
 
   # Job # 3: #
   build_and_push_to_registry:
@@ -111,7 +111,7 @@ jobs:
     needs: [test_build]
 
     # Build image and push to GitHub registry if on correct branch #
-    name: Push Docker image to GitHub Container Registry
+    name: Build and Push Docker Image # to GitHub Container Registry
 
     runs-on: ubuntu-latest
     
