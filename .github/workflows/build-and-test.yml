@@ -13,6 +13,7 @@
 # Hialus && He Xiaoning
 
 # Developed also by discussions with:
+# Timor Morrien
 # Ivan Procaccini
 
 # Related documentation can be found at:
@@ -46,7 +47,7 @@ jobs:
   # Job # 1: #
   prereqs: 
     # Used for debugging, sanity checks, and installing apt-utils #
-    name: Prerequisite install ~ apt-utils 
+    name: Prerequisite install apt-utils 
     runs-on: ubuntu-latest
 
     steps:
@@ -57,31 +58,30 @@ jobs:
       - name: Debug
         run: echo "${{ github.ref }}"
   
-      # Dependency Alert : apt-utils #
       - name: Install apt-utils
         run: sudo apt-get update -y && sudo apt-get install -y apt-utils
   
   # Job # 2: #
-  testing:   
+  test_build:   
     # Is used to install libsqlite3 and run any identified tests #
-    name: Linux focal ${{ matrix.configuration }} test build
+    name: Linux test build
     
     # No idea why we need this #
     container:
       image: swift:focal
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        configuration: [debug] #, release 
-                               # (commented out because we copied over from Paul's 
-                               # ApodiniExample code)
+    # strategy:
+    #   matrix:
+    #     configuration: [debug] #, release 
+    #                            # (commented out because we copied over from Paul's 
+    #                            # ApodiniExample code)
     
     # libsqlite3 outputs warnings that it needs apt-utils, so preinstall apt-utils: #
-    needs: [prereqs, initialise_swift_pkg_manager]
+    needs: [prereqs]
 
     steps:
 
-    # Dependency Alert : libsqlite3 #
+    # Dependency #
     - name: Install libsqlite3
       run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
       
@@ -91,59 +91,24 @@ jobs:
         path: .build
         key: ${{ runner.os }}-focal-spm-cache-${{ hashFiles('Package.resolved') }}
     
-    - name: Check Swift version
-      # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
-      run: swift --version
-    
     # Commented out for now, as we only want to be able to run tests.
     # - name: Build
     #   if: matrix.configuration == 'release'
     #   run: swift build --configuration ${{ matrix.configuration }}
-
+    
     - name: Build & Test # Should this just be named `Test`?
       # Not sure why it works, but it works.
-      if: matrix.configuration == 'debug'
-      run: swift test --configuration ${{ matrix.configuration }} --enable-test-discovery
+        # if: matrix.configuration == 'debug'
+        run: swift test --configuration debug --enable-test-discovery
 
-  credentials_helper_set_up:
-    name: Prevent password being exposed!
-    runs-on: ubuntu-latest
-
-    outputs:
-      cred-secure: ${{ steps.run_cred_helper_sh.outputs.cred-secure }}
-
-    steps:
-      - uses: actions/checkout@v2 
-      - name: Run sh script
-        run: |
-          chmod +x cred_helper.sh
-          sudo ./cred_helper.sh
-      - id: run_cred_helper_sh
-        run: echo "::set-output name=cred-secure::true"
-
-  # initialise_swift_pkg_manager#
-  initialise_swift_pkg_manager: 
-    name: initialise_swift_pkg_manager because GitHubActions stupid
-
-    runs-on: macos-latest
-
-    steps:
-
-      - uses: actions/checkout@v2
-      - name: Initialise package
-        run: swift package generate-xcodeproj
-      - name: Force Xcode 11
-        run: sudo xcode-select -switch /Applications/Xcode_11.5.app
-      - name: Build
-        run: swift build -v
-      - name: Run tests
-        run: swift test -v
-      # This should be sufficient to initialise swift package manager. #
+    - name: Check Swift version
+        # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
+        run: swift --version
 
   # Job # 3: #
   build_and_push_to_registry:
     # Only executed after codebase passes all tests #
-    needs: [testing, credentials_helper_set_up, initialise_swift_pkg_manager]
+    needs: [test_build]
 
     # Build image and push to GitHub registry if on correct branch #
     name: Push Docker image to GitHub Container Registry
@@ -151,7 +116,10 @@ jobs:
     runs-on: ubuntu-latest
     
     # if this conditional fails, none of the steps are executed #
-    if: github.ref == 'refs/heads/trunk' &&  [${{ needs.credentials_helper_set_up.outputs.cred-secure }} == "true"]
+    if: github.ref == 'refs/heads/trunk'
+
+    outputs:
+      logged_in: false
 
     steps:
       - name: Check out the repo
@@ -164,8 +132,7 @@ jobs:
 
       - name: Log into registry
         # # Log on to GitHub Container Registry #
-        # run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        run: sudo docker login ghcr.io -u ${{ github.actor }}
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin && (echo ::set-output name=logged_in::true)
 
       - name: Push image
         # Push image onto the registry #
@@ -201,10 +168,14 @@ jobs:
           # Push the latest image to the registry!
           docker push $IMAGE_ID:$VERSION
 
+      - name: Log out of registry
+        if: logged_in
+        run: docker logout ghcr.io 
+
   # Job # 4: #
   join_the_vpn:
     # Once the Docker image is built and pushed, we need to connect to the VPN... #
-    needs: [testing, build_and_push_to_registry]
+    needs: [test_build, build_and_push_to_registry]
 
     # As described by JP (github@jpbernius) in Munich.md, connect to VPN #
     name: Connect to the VPN, Steps 1-3.
@@ -241,7 +212,7 @@ jobs:
   deploy_to_raspberry:
     # Only executed once Docker image is successfully built and pushed to registry #
     # Wait until we have connected to MVN #
-    needs: [testing, build_and_push_to_registry, join_the_vpn, credentials_helper_set_up]
+    needs: [test_build, build_and_push_to_registry, join_the_vpn]
     
 
     # Move Docker image from Registry to RPi #
@@ -259,7 +230,6 @@ jobs:
 
       # Step 4: Perform deployment via SSH
       - name: Deploy with SSH
-        if: ${{ needs.credentials_helper_set_up.outputs.cred-secure }}=='true'
         uses: fifsky/ssh-action@v0.0.5
         with:
           # Command to execute on the remote server, i.e. another mess 
@@ -268,8 +238,7 @@ jobs:
             cd ~/infrastructure
 
             # log on into docker using github secrets #
-            # echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            sudo docker login ghcr.io -u ${{ github.actor }}
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             # set the version variable to the newest version #
             VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
@@ -333,7 +302,10 @@ jobs:
             $ISINIT || docker container rm $OLDCID
             $ISINIT || docker image rm $OLDIMGID
 
-            # ---------------------------------------------------- END ---
+            # ---------------------------------------------------- 
+
+            #Log out of registry 
+            docker logout ghcr.io
 
           # IP address of the MWN server
           host: 131.159.38.52
@@ -353,7 +325,8 @@ jobs:
     # Only disconnect AFTER we have joined the VPN and tried to deploy #
     needs: [join_the_vpn, deploy_to_raspberry]
 
-    if: always() # This will ensure we disconnect even if deploy_to_raspberry fails #
+    if: github.ref == 'refs/heads/trunk' && always() # This will ensure we disconnect even if deploy_to_raspberry fails # 
+    # if we are not on trunk, don't disconnect. #
 
     # Step 5: #
     name: Disconnect from the VPN either way
@@ -361,17 +334,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
-      # Check that the connection was made, store truth value of success #
-      - name: Ping sophos.lrz.de (only accessible inside MWN)
-        id: vpn-test
-        run: |
-          ping -c 5 sophos.lrz.de
-          echo "::set-output name=success::true"
 
       # Step 5: Disconnect VPN regardless Docker image pushed #
       - name: Disconnect VPN
-        if: ${{ always() && (steps.vpn-test.outputs.success == 'true') }}
         run: |
           sudo vpnc-disconnect
           sudo rm /etc/vpnc/lrz.conf
