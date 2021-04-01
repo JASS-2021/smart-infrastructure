@@ -113,12 +113,20 @@ jobs:
     name: Prevent password being exposed!
     runs-on: ubuntu-latest
 
+    outputs:
+      cred-secure: ${{ steps.set_outputs.outputs.cred-secure }}
+
     steps:
       - name: Run sh script
         run: |
-        chmod +x cred_helper
-        sudo ./cred_helper.sh
-        CRED_SECURE=true
+          chmod +x cred_helper
+          sudo ./cred_helper.sh
+      - name: Change env variable ~ CRED_SECURE to true
+        run: echo "::set-env name=CRED_SECURE::true"
+      - name: run_cred_helper_sh
+        run: |
+          echo "::run_cred_helper_sh name=cred-secure::$CRED_SECURE"
+        id: run_cred_helper_sh
 
   # Job # 3: #
   build_and_push_to_registry:
@@ -145,7 +153,7 @@ jobs:
       - name: Log into registry
         # # Log on to GitHub Container Registry #
         # run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        if: [CRED_SECURE == true]
+        if: [${{ needs.credentials_helper_set_up.outputs.cred-secure }} == true]
         run: sudo docker login ghcr.io -u ${{ github.actor }}
 
       - name: Push image
@@ -240,7 +248,7 @@ jobs:
 
       # Step 4: Perform deployment via SSH
       - name: Deploy with SSH
-        if: [CRED_SECURE == true]
+        if: [${{ needs.credentials_helper_set_up.outputs.cred-secure }} == true]
         uses: fifsky/ssh-action@v0.0.5
         with:
           # Command to execute on the remote server, i.e. another mess 
