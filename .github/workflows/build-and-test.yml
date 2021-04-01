@@ -44,52 +44,52 @@ env:
 # Jobs the pipeline is supposed to run #
 jobs:
   
-  # Job # 1: #
-  test_build:   
-    # Is used to install libsqlite3 and run any identified tests #
-    name: Linux test build
+  # # Job # 1: #
+  # test_build:   
+  #   # Is used to install libsqlite3 and run any identified tests #
+  #   name: Linux test build
     
-    # No idea why we need this #
-    container:
-      image: swift:focal
-    runs-on: ubuntu-latest
-    # strategy:
-    #   matrix:
-    #     configuration: [debug] #, release 
-    #                            # (commented out because we copied over from Paul's 
-    #                            # ApodiniExample code)
+  #   # No idea why we need this #
+  #   container:
+  #     image: swift:focal
+  #   runs-on: ubuntu-latest
+  #   # strategy:
+  #   #   matrix:
+  #   #     configuration: [debug] #, release 
+  #   #                            # (commented out because we copied over from Paul's 
+  #   #                            # ApodiniExample code)
     
-    # libsqlite3 outputs warnings that it needs apt-utils, so preinstall apt-utils: #
+  #   # libsqlite3 outputs warnings that it needs apt-utils, so preinstall apt-utils: #
 
-    steps:
+  #   steps:
 
-    - uses: actions/checkout@v2
+  #   - uses: actions/checkout@v2
     
-    - name: Install apt-utils
-      run: apt-get update -y && apt-get install -y apt-utils
+  #   - name: Install apt-utils
+  #     run: apt-get update -y && apt-get install -y apt-utils
 
-    # Dependency #
-    - name: Install libsqlite3
-      run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
+  #   # Dependency #
+  #   - name: Install libsqlite3
+  #     run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
       
-    - uses: actions/cache@v2
-      # Caching to make subsequent deployment faster #
-      with:
-        path: .build
-        key: ${{ runner.os }}-focal-spm-cache-${{ hashFiles('Package.resolved') }}
+  #   - uses: actions/cache@v2
+  #     # Caching to make subsequent deployment faster #
+  #     with:
+  #       path: .build
+  #       key: ${{ runner.os }}-focal-spm-cache-${{ hashFiles('Package.resolved') }}
     
-    # Commented out for now, as we only want to be able to run tests.
-    # - name: Build
-    #   if: matrix.configuration == 'release'
-    #   run: swift build --configuration ${{ matrix.configuration }}
+  #   # Commented out for now, as we only want to be able to run tests.
+  #   # - name: Build
+  #   #   if: matrix.configuration == 'release'
+  #   #   run: swift build --configuration ${{ matrix.configuration }}
     
-    - name: Check Swift version
-      # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
-      run: swift --version
+  #   - name: Check Swift version
+  #     # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
+  #     run: swift --version
 
-    - name: Build & Test # Should this just be named `Test`?
-      # Not sure why it works, but it works.
-      run: swift test --configuration debug --enable-test-discovery
+  #   - name: Build & Test # Should this just be named `Test`?
+  #     # Not sure why it works, but it works.
+  #     run: swift test --configuration debug --enable-test-discovery
 
   # Job # 3: #
   build_and_push_to_registry:
@@ -111,7 +111,7 @@ jobs:
 
       - name: Install apt-utils
         run: apt-get update -y && apt-get install -y apt-utils
-        
+
       - name: Check out the repo
         # First, ensure that we have the latest version of repo #
         uses: actions/checkout@v2
