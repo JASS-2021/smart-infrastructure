@@ -9,27 +9,25 @@ struct ClusterManagementJob: Job {
     
     let scheduleDecoder = ScheduleDecoder()
 
-
-    init() {
-        run()
-    }
-
     func run() {
         let eventLoop = eventLoopGroup.next()
-        guard let junctionSchedule = scheduleDecoder.loadJson() else {
+        guard let schedule = scheduleDecoder.loadJson() else {
             print("nope")
             return
         }
-        let timedSchedule: [ScheduleItem] = scheduleDecoder.turnReadableToUsable(junctionSchedule: junctionSchedule)
         
-        timedSchedule.forEach{ scheduleItem in
-            
+        schedule.forEach{ scheduleItem in
+            eventLoop.scheduleTask(in: .seconds(Int64(scheduleItem.time))) {
+                scheduleItem.actions.forEach { action in
+                    guard let device = lifxDeviceManager.device(withName: action.trafficLightName) else {
+                        print("No device with the name \"\(action.trafficLightName)\" for junction \"\(action.junctionName)\" wasn't found")
+                        return
+                    }
+                    
+                    device.set(lifxColor: ColorLight.LIFXColor(action.color))
+                }
+            }
         }
-        
-        eventLoop.scheduleTask(in: .seconds(4)) {
-            print(timedSchedule)
-            print(4)
-        }
-        
     }
+    
 }

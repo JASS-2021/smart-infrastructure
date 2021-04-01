@@ -2,7 +2,7 @@ import Foundation
 
 struct ScheduleDecoder {
     
-    func loadJson() -> [Junction]? {
+    func loadJson() -> [ScheduleItem]? {
         
         if let url = Bundle.module.resourceURL?.appendingPathComponent("schedule.json") {
             do {
@@ -11,12 +11,13 @@ struct ScheduleDecoder {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
                 let jsonData = try decoder.decode(Cluster.self, from: data)
-                return jsonData.junctions
+                return turnReadableToUsable(junctionSchedule: jsonData.junctions)
             } catch {
                 print("error:\(error)")
             }
         }
-        return nil
+        let scheduleItem = ScheduleItem(time: 2, actions: [Action(color: "red", trafficLightName: "trafficLight1", junctionName: "duckie1")])
+        return [scheduleItem]
     }
     
     func turnReadableToUsable(junctionSchedule: [Junction]) -> [ScheduleItem] {
