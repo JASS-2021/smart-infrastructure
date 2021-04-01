@@ -136,7 +136,7 @@ jobs:
     
     # if this conditional fails, none of the steps are executed #
     if: github.ref == 'refs/heads/trunk'
-    if: [${{ needs.credentials_helper_set_up.outputs.cred-secure }} == true]
+    if: [${{ needs.credentials_helper_set_up.outputs.cred-secure }} == "true"]
 
     steps:
       - name: Check out the repo
