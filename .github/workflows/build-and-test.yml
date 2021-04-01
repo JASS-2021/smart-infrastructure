@@ -181,79 +181,8 @@ jobs:
           args: "-vvv" 
           # Command to execute on the remote server, i.e. another mess 
           command: |
-
             # cd into smart-infrastructure directory #
             cd ~/infrastructure
-
-            # log on into docker using github secrets #
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # set the version variable to the newest version #
-            VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-            # Sanity check that it is the trunk #
-            echo VERSION=$VERSION
-            
-            REGISTRY_ADDR=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$VERSION
-
-            # Change all uppercase to lowercase to follow convention of repository name
-            REGISTRY_ADDR=$(echo $REGISTRY_ADDR | tr '[A-Z]' '[a-z]')
-
-            # Pull the image out of where we stored it
-            docker pull $REGISTRY_ADDR
-
-            # -----------------------------------------------------
-
-            # Store the old port and container_id to make sure we can find, stop and rm it
-            NGINX_CONFIG_PATH="conf.d/nginx.conf"
-            OLDPORT="$(sed -n 's/proxy_pass http\:\/\/?:(.+?)\:(.+?)/\1/p' $NGINX_CONFIG_PATH)"
-            OLDCID="$(sed -n 's/proxy_pass http\:\/\/(.+?)\:(.+?)/\1/p' $NGINX_CONFIG_PATH)"
-            
-            # Initialise ISINIT as false.
-            ISINIT=false
-            # if container hasn't been set up yet, then OLDCID is just IP of localhost.#
-            # and then we set ISINIT to true. #
-            ["$OLDCID" == "127.0.0.1"] && ISINIT=true
-
-            # Set the old url to be this:
-            OLDURL="http://$OLDCID:$OLDPORT"
-            # Set the old image to the id of the one container we can 
-            # find on running docker inspect
-            OLDIMGID=$(docker inspect --format='{{.Image}}' $OLDCID)
-
-            # --------------------------------------------------------
-            # CREATE THE NEW CONTAINER'S DETAILS:
-
-            # New port is the one that is not the old port's 
-            NEWPORT=($OLDPORT=="8091"?"8092":"8091")
-            # New container id is whatever id we get when running the newest image, 
-            # after syncing up with current container.
-            # NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_NAME:$VERSION -e SYNCHOST=$OLDURL)
-
-            # # ... here we are waiting for the sync to happen. 
-            # # How long does that take? 1 second?
-            # sleep 1
-
-            # # Regex the new URL to ...?
-            # sed -r -i -e "s/(proxy_pass http://)(.+?):(.+?)/\1$NEWCID\:$NEWPORT/" $NGINX_CONFIG_PATH
-
-            # # --------------------------------------------------------
-
-            # # Reload the nginx container, refer to wiki.
-            # docker exec infrastructure_nginx /etc/init.d/nginx reload
-            
-            # # ----------------------------------------------------
-            # # STOP THE OLD CONTAINER (if it exists)
-
-            # # ISINIT is false => stop old container #
-            # # ISINIT is true => there was never a container present, just pass through #
-            # $ISINIT || docker container stop $OLDCID
-            # $ISINIT || docker container rm $OLDCID
-            # $ISINIT || docker image rm $OLDIMGID
-
-            # # ---------------------------------------------------- 
-
-            # Log out of registry 
-            docker logout ghcr.io
 
           # IP address of the MWN server
           host: 131.159.38.52
