@@ -17,6 +17,7 @@ struct ExampleWebService: WebService {
         
         // The DiscoveryJob should run every minute
         Schedule(DiscoveryJob(), on: "* * * * *", \KeyStore.discoveryJob)
+        Schedule(ClusterManagementJob(), on: "* * * * *", \KeyStore.clusterManagementJob)
     }
     
     var content: some Component {

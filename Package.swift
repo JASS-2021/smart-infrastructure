@@ -35,8 +35,18 @@ let package = Package(
                         .product(name: "ApodiniREST", package: "Apodini"),
                         .product(name: "ApodiniOpenAPI", package: "Apodini"),
                         .target(name: "ApodiniLIFX")
+                    ],
+                    resources: [
+                        .process("Resources/schedule.json")
                     ]
             ),
+            .target(
+                name: "Resources",
+                resources: [
+                    .process("schedule.json"),
+                    .copy("schedule.json")
+                ]
+              ),
             .target(
                     name: "ApodiniLIFX",
                     dependencies: [
