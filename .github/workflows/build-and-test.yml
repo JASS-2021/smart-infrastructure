@@ -153,8 +153,8 @@ jobs:
       - name: Log into registry
         # # Log on to GitHub Container Registry #
         # run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        if: [${{ needs.credentials_helper_set_up.outputs.cred-secure }} == true]
         run: sudo docker login ghcr.io -u ${{ github.actor }}
+        if: [${{ needs.credentials_helper_set_up.outputs.cred-secure }} == true]
 
       - name: Push image
         # Push image onto the registry #
