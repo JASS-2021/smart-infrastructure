@@ -324,24 +324,11 @@ jobs:
           # String that contains a private key, stored on JASS-2021 secrets (OpenSSH format)
           key: ${{ secrets.TUM_RBP_1_SECRET }}
 
-  # Job # 6: #     ## Disconnect when we are done ##
-  disconnect_from_vpn: 
-
-    # Only disconnect AFTER we have joined the VPN and tried to deploy #
-    needs: [join_the_vpn, deploy_to_raspberry]
-
-    if: github.ref == 'refs/heads/trunk' && always() # This will ensure we disconnect even if deploy_to_raspberry fails # 
-    # if we are not on trunk, don't disconnect. #
-
-    # Step 5: #
-    name: Disconnect from the VPN either way
-
-    runs-on: ubuntu-latest
-
-    steps:
-
       # Step 5: Disconnect VPN regardless Docker image pushed #
       - name: Disconnect VPN
+        if: ${{ always() }}
         run: |
-          sudo vpnc-disconnect
-          sudo rm /etc/vpnc/lrz.conf
+          vpnc-disconnect
+          rm /etc/vpnc/lrz.conf
+          
+      
