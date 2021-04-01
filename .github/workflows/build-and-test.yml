@@ -43,12 +43,12 @@ env:
 
 # Jobs the pipeline is supposed to run #
 jobs:
-  
+
   # # Job # 1: #
   # test_build:   
   #   # Is used to install libsqlite3 and run any identified tests #
   #   name: Linux test build
-    
+
   #   # No idea why we need this #
   #   container:
   #     image: swift:focal
@@ -58,31 +58,31 @@ jobs:
   #   #     configuration: [debug] #, release 
   #   #                            # (commented out because we copied over from Paul's 
   #   #                            # ApodiniExample code)
-    
+
   #   # libsqlite3 outputs warnings that it needs apt-utils, so preinstall apt-utils: #
 
   #   steps:
 
   #   - uses: actions/checkout@v2
-    
+
   #   - name: Install apt-utils
   #     run: apt-get update -y && apt-get install -y apt-utils
 
   #   # Dependency #
   #   - name: Install libsqlite3
   #     run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
-      
+
   #   - uses: actions/cache@v2
   #     # Caching to make subsequent deployment faster #
   #     with:
   #       path: .build
   #       key: ${{ runner.os }}-focal-spm-cache-${{ hashFiles('Package.resolved') }}
-    
+
   #   # Commented out for now, as we only want to be able to run tests.
   #   # - name: Build
   #   #   if: matrix.configuration == 'release'
   #   #   run: swift build --configuration ${{ matrix.configuration }}
-    
+
   #   - name: Check Swift version
   #     # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
   #     run: swift --version
@@ -100,7 +100,7 @@ jobs:
     name: Build and Push Docker Image # to GitHub Container Registry
 
     runs-on: ubuntu-latest
-    
+
     # if this conditional fails, none of the steps are executed #
     if: github.ref == 'refs/heads/trunk'
 
@@ -140,7 +140,7 @@ jobs:
           # Strip "v" prefix from tag name
           # [] - evaluates 'index' of booleans to true (1) or false (0) #
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          
+
           # Use Docker's `latest` tag convention
           [ "$VERSION" == "trunk" ] && VERSION=latest
 
@@ -148,7 +148,7 @@ jobs:
           # This is always going to be ghcr.io/jass-2021/$IMAGE_NAME and latest #
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
-          
+
           # Tag the local Docker $IMAGE_NAME with personalised image_id and `latest` tag#
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
 
@@ -156,13 +156,13 @@ jobs:
           docker push $IMAGE_ID:$VERSION
 
       - name: Log out of registry
-        run: docker logout ghcr.io 
+        run: docker logout ghcr.io
 
   # Job # 5: #     ## DEPLOY ##
   deploy_to_raspberry:
     # Only executed once Docker image is successfully built and pushed to registry #
     needs: [build_and_push_to_registry] #test_build,
-    
+
 
     # Move Docker image from Registry to RPi #
     name: Deploy Docker image to the Raspberry
@@ -178,20 +178,88 @@ jobs:
       - name: Deploy with SSH
         uses: fifsky/ssh-action@v0.0.5
         with:
-          args: "-vvv" 
           # Command to execute on the remote server, i.e. another mess 
           command: |
             # cd into smart-infrastructure directory #
             cd ~/infrastructure
+            # log on into docker using github secrets #
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # set the version variable to the newest version #
+            VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+            # Sanity check that it is the trunk #
+            echo VERSION=$VERSION
+
+            REGISTRY_ADDR=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$VERSION
+
+            # Change all uppercase to lowercase to follow convention of repository name
+            REGISTRY_ADDR=$(echo $REGISTRY_ADDR | tr '[A-Z]' '[a-z]')
+
+            # Pull the image out of where we stored it
+            docker pull $REGISTRY_ADDR
+
+            # -----------------------------------------------------
+
+            # Store the old port and container_id to make sure we can find, stop and rm it
+            NGINX_CONFIG_PATH="conf.d/nginx.conf"
+            OLDPORT="$(sed -n 's/proxy_pass http\:\/\/?:(.+?)\:(.+?)/\1/p' $NGINX_CONFIG_PATH)"
+            OLDCID="$(sed -n 's/proxy_pass http\:\/\/(.+?)\:(.+?)/\1/p' $NGINX_CONFIG_PATH)"
+
+            # Initialise ISINIT as false.
+            ISINIT=false
+            # if container hasn't been set up yet, then OLDCID is just IP of localhost.#
+            # and then we set ISINIT to true. #
+            ["$OLDCID" == "127.0.0.1"] && ISINIT=true
+
+            # Set the old url to be this:
+            OLDURL="http://$OLDCID:$OLDPORT"
+            # Set the old image to the id of the one container we can
+            # find on running docker inspect
+            OLDIMGID=$(docker inspect --format='{{.Image}}' $OLDCID)
+
+            # --------------------------------------------------------
+            # CREATE THE NEW CONTAINER'S DETAILS:
+
+            # New port is the one that is not the old port's
+            NEWPORT=($OLDPORT=="8091"?"8092":"8091")
+            # New container id is whatever id we get when running the newest image,
+            # after syncing up with current container.
+            # NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_NAME:$VERSION -e SYNCHOST=$OLDURL)
+
+            # ... here we are waiting for the sync to happen.
+            # How long does that take? 1 second?
+            sleep 1
+
+            # Regex the new URL to ...?
+            sed -r -i -e "s/(proxy_pass http://)(.+?):(.+?)/\1$NEWCID\:$NEWPORT/" $NGINX_CONFIG_PATH
+
+            # --------------------------------------------------------
+
+            # Reload the nginx container, refer to wiki.
+            docker exec infrastructure_nginx /etc/init.d/nginx reload
+
+            # ----------------------------------------------------
+            # STOP THE OLD CONTAINER (if it exists)
+
+            # ISINIT is false => stop old container #
+            # ISINIT is true => there was never a container present, just pass through #
+            $ISINIT || docker container stop $OLDCID
+            $ISINIT || docker container rm $OLDCID
+            $ISINIT || docker image rm $OLDIMGID
+
+            # ----------------------------------------------------
+
+            # Log out of registry
+            docker logout ghcr.io
 
           # IP address of the MWN server
           host: 131.159.38.52
-          
-          # Username for authentication (provided by Paul)
+
+          # Username for authentication
           user: ubuntu
 
-          # Port number of the server (provided by Paul)
-          port: 10011  # Need to check that all projects are not using the same port! #
+          # Port number of the server
+          port: 10010
 
           # String that contains a private key, stored on JASS-2021 secrets (OpenSSH format)
           key: ${{ secrets.TUM_RBP_1_SECRET }}
