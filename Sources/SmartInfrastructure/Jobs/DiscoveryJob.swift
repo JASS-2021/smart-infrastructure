@@ -12,6 +12,7 @@ import ApodiniLIFX
 
 struct KeyStore: EnvironmentAccessible {
     var discoveryJob: DiscoveryJob
+    var clusterManagementJob: ClusterManagementJob
 }
 
 
