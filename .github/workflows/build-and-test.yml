@@ -77,7 +77,7 @@ jobs:
                                # ApodiniExample code)
     
     # libsqlite3 outputs warnings that it needs apt-utils, so preinstall apt-utils: #
-    needs: [prereqs]
+    needs: [prereqs, initialise_swift_pkg_manager]
 
     steps:
 
@@ -128,7 +128,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    
+
       - uses: actions/checkout@v2
       - name: Initialise package
         run: swift package generate-xcodeproj
