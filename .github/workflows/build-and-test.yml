@@ -114,19 +114,15 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      cred-secure: ${{ steps.set_outputs.outputs.cred-secure }}
+      cred-secure: ${{ steps.run_cred_helper_sh.outputs.cred-secure }}
 
     steps:
       - name: Run sh script
         run: |
           chmod +x cred_helper
           sudo ./cred_helper.sh
-      - name: Change env variable ~ CRED_SECURE to true
-        run: echo "::set-env name=CRED_SECURE::true"
-      - name: run_cred_helper_sh
-        run: |
-          echo "::run_cred_helper_sh name=cred-secure::$CRED_SECURE"
-        id: run_cred_helper_sh
+      - id: run_cred_helper_sh
+        run: echo "::set-output name=cred-secure::true"
 
   # Job # 3: #
   build_and_push_to_registry:
