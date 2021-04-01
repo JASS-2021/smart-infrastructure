@@ -223,6 +223,7 @@ jobs:
       - name: Deploy with SSH
         uses: fifsky/ssh-action@v0.0.5
         with:
+          args: "-vvv" 
           # Command to execute on the remote server, i.e. another mess 
           command: |
 
@@ -296,7 +297,7 @@ jobs:
 
             # ---------------------------------------------------- 
 
-            #Log out of registry 
+            # Log out of registry 
             docker logout ghcr.io
 
           # IP address of the MWN server
