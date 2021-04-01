@@ -119,7 +119,7 @@ jobs:
     steps:
       - name: Run sh script
         run: |
-          chmod +x cred_helper
+          chmod +x ./cred_helper.sh
           sudo ./cred_helper.sh
       - id: run_cred_helper_sh
         run: echo "::set-output name=cred-secure::true"
