@@ -13,7 +13,7 @@ struct ExampleWebService: WebService {
             .exporter(OpenAPIInterfaceExporter.self)
         
         // Configures the LIFX device manager to emit more logging information for the example
-        LIFXConfiguration(logLevel: .info)
+        LIFXConfiguration(interfaceName: "en0", logLevel: .info)
         
         // The DiscoveryJob should run every minute
         Schedule(DiscoveryJob(), on: "* * * * *", \KeyStore.discoveryJob)
@@ -25,6 +25,7 @@ struct ExampleWebService: WebService {
                 .operation(.create)
         }
         DevicesComponents()
+        ColorLightComponents()
     }
 }
 

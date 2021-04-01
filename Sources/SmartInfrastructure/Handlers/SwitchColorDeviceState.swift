@@ -1,18 +1,10 @@
-//
-//  ChangeDeviceState.swift
-//  
-//
-//  Created by Paul Schmiedmayer on 3/28/21.
-//
-
 import Apodini
 import ApodiniLIFX
 
-
-struct ChangeDeviceState: Handler {
+struct SwitchColorDeviceState: Handler {
     @Environment(\.lifxDeviceManager) var lifxDeviceManager: LIFXDeviceManager
     @Parameter(.http(.path)) var name: String
-    @Parameter var state: DeviceState
+    @Parameter var color: ColorLightState
     
     @Throws(.notFound, reason: "No device was found")
     var deviceNotFoundError: ApodiniError
@@ -24,19 +16,11 @@ struct ChangeDeviceState: Handler {
                 reason: "No device with the name \"\(name)\" was found"
             )
         }
-        
-        return device.set(powerLevel: state.powerLevel)
+                
+        return device.set(lifxColor: ColorLight.LIFXColor(color.rawValue))
             .flatMap { _ in
-                device.powerLevel.load()
+                device.state.load()
             }
             .transform(to: Device(device))
-    }
-}
-
-extension LIFXDeviceManager {
-    func device(withName name: String) -> NIOLIFX.ColorLight? {
-        devices.first(where: { device in
-            device.label.wrappedValue?.replacingOccurrences(of: "\0", with: "") == name
-        })
     }
 }

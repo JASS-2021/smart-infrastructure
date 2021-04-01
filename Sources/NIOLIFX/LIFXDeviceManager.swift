@@ -14,7 +14,7 @@ public final class LIFXDeviceManager {
     private(set) internal static var logger = Logger(label: "NIOLIFX")
     
     
-    public private(set) var devices: Set<Device> = [] {
+    public private(set) var devices: Set<ColorLight> = [] {
         didSet {
             updateNotifier?.updateNotifier()
         }
@@ -80,7 +80,7 @@ public final class LIFXDeviceManager {
     
     @discardableResult
     public func discoverDevices() -> EventLoopFuture<Void> {
-        var newlyDiscoveredDevices: Set<Device> = []
+        var newlyDiscoveredDevices: Set<ColorLight> = []
         let discoverPromise: EventLoopPromise<Void> = eventLoop.makePromise()
         
         // Create message and send to channel
@@ -90,9 +90,10 @@ public final class LIFXDeviceManager {
                 return
             }
             
-            let newDevice = Device(address: stateServiceMessage.target.address,
-                                   service: stateServiceMessage.service,
-                                   getValuesUsing: self)
+            let newDevice = ColorLight(address: stateServiceMessage.target.address,
+                                       service: stateServiceMessage.service,
+                                       getValuesUsing: self)
+            
             
             if let oldDevice = self.devices.first(where: { $0 == newDevice }) {
                 newDevice.updateCachedValues(from: oldDevice)
