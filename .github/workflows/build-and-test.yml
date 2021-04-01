@@ -58,9 +58,6 @@ jobs:
       - name: Debug
         run: echo "${{ github.ref }}"
   
-      - name: Install apt-utils
-        run: sudo apt-get update -y && sudo apt-get install -y apt-utils
-  
   # Job # 2: #
   test_build:   
     # Is used to install libsqlite3 and run any identified tests #
@@ -77,11 +74,13 @@ jobs:
     #                            # ApodiniExample code)
     
     # libsqlite3 outputs warnings that it needs apt-utils, so preinstall apt-utils: #
-    needs: [prereqs]
 
     steps:
 
     - uses: actions/checkout@v2
+    
+    - name: Install apt-utils
+        run: sudo apt-get update -y && sudo apt-get install -y apt-utils
 
     # Dependency #
     - name: Install libsqlite3
@@ -109,7 +108,7 @@ jobs:
   # Job # 3: #
   build_and_push_to_registry:
     # Only executed after codebase passes all tests #
-    needs: [prereqs, test_build]
+    needs: [test_build]
 
     # Build image and push to GitHub registry if on correct branch #
     name: Build and Push Docker Image # to GitHub Container Registry
@@ -126,6 +125,9 @@ jobs:
       - name: Check out the repo
         # First, ensure that we have the latest version of repo #
         uses: actions/checkout@v2
+
+      - name: Install apt-utils
+        run: sudo apt-get update -y && sudo apt-get install -y apt-utils
 
       - name: Build image
         # Build Docker image jass-smart-infrastructure-webservice:COMMIT_ID #
