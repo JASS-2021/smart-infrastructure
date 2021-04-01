@@ -236,6 +236,9 @@ jobs:
         with:
           # Command to execute on the remote server, i.e. another mess 
           command: |
+            
+            echo "${{ INPUT_POST }}"
+
             # cd into smart-infrastructure directory #
             cd ~/infrastructure
 
