@@ -4,7 +4,7 @@ struct ScheduleDecoder {
     
     func loadJson() -> [Junction]? {
         
-        if let url = Bundle.main.url(forResource: "Resources/schedule", withExtension: "json") {
+        if let url = Bundle.module.resourceURL?.appendingPathComponent("schedule.json") {
             do {
                 let data = try Data(contentsOf: url)
                 print(data)

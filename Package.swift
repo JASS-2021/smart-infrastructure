@@ -37,16 +37,9 @@ let package = Package(
                         .target(name: "ApodiniLIFX")
                     ],
                     resources: [
-                        .process("Resources/schedule.json")
+                        .copy("Resources/schedule.json")
                     ]
             ),
-            .target(
-                name: "Resources",
-                resources: [
-                    .process("schedule.json"),
-                    .copy("schedule.json")
-                ]
-              ),
             .target(
                     name: "ApodiniLIFX",
                     dependencies: [
