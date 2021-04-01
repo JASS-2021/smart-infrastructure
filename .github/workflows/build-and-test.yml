@@ -94,7 +94,7 @@ jobs:
   # Job # 3: #
   build_and_push_to_registry:
     # Only executed after codebase passes all tests #
-    needs: [test_build]
+    # needs: [test_build]
 
     # Build image and push to GitHub registry if on correct branch #
     name: Build and Push Docker Image # to GitHub Container Registry
@@ -166,7 +166,7 @@ jobs:
   # Job # 4: #
   join_the_vpn:
     # Once the Docker image is built and pushed, we need to connect to the VPN... #
-    needs: [test_build, build_and_push_to_registry]
+    needs: [ build_and_push_to_registry] #test_build,
 
     # As described by JP (github@jpbernius) in Munich.md, connect to VPN #
     name: Connect to the VPN, Steps 1-3.
@@ -203,7 +203,7 @@ jobs:
   deploy_to_raspberry:
     # Only executed once Docker image is successfully built and pushed to registry #
     # Wait until we have connected to MVN #
-    needs: [test_build, build_and_push_to_registry, join_the_vpn]
+    needs: [build_and_push_to_registry, join_the_vpn] #test_build,
     
 
     # Move Docker image from Registry to RPi #
