@@ -9,6 +9,11 @@ struct ClusterManagementJob: Job {
     
     let scheduleDecoder = ScheduleDecoder()
 
+
+    init() {
+        run()
+    }
+
     func run() {
         let eventLoop = eventLoopGroup.next()
         guard let junctionSchedule = scheduleDecoder.loadJson() else {
