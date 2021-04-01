@@ -44,46 +44,44 @@ env:
 # Jobs the pipeline is supposed to run #
 jobs:
 
-  # Job # 1: #
-  test_build:   
-    name: Linux test build
-
-    # Setup build environment #
-    container:
-      image: swift:focal
-    runs-on: ubuntu-latest
-
-    steps:
-
-    - uses: actions/checkout@v2
-
-    - name: Install apt-utils
-      run: apt-get update -y && apt-get install -y apt-utils
-
-    # Dependency #
-    - name: Install libsqlite3
-      run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
-
-    - uses: actions/cache@v2
-      # Caching to make subsequent deployment faster #
-      with:
-        path: .build
-        key: ${{ runner.os }}-focal-spm-cache-${{ hashFiles('Package.resolved') }}
-
-    - name: Check Swift version
-      # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
-      run: swift --version
-
-    - name: Build & Test
-      run: swift test --configuration debug --enable-test-discovery
+#  # Job # 1: #
+#  test_build:
+#    name: Linux test build
+#
+#    # Setup build environment #
+#    container:
+#      image: swift:focal
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#    - uses: actions/checkout@v2
+#
+#    # Dependency #
+#    - name: Install libsqlite3
+#      run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
+#
+#    - uses: actions/cache@v2
+#      # Caching to make subsequent deployment faster #
+#      with:
+#        path: .build
+#        key: ${{ runner.os }}-focal-spm-cache-${{ hashFiles('Package.resolved') }}
+#
+#    - name: Check Swift version
+#      # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
+#      run: swift --version
+#
+#    - name: Build & Test
+#      run: swift test --configuration debug --enable-test-discovery
 
   # Job # 3: #
   build_and_push_to_registry:
     # Only executed after codebase passes all tests #
-    needs: [test_build]
+#    needs: [test_build]
 
     # Build image and push to GitHub registry if on correct branch #
     name: Build and Push Docker Image # to GitHub Container Registry
+    env:
+      DOCKER_TARGET_PLATFORM: linux/arm64/v8
 
     runs-on: ubuntu-latest
 
@@ -91,63 +89,34 @@ jobs:
     if: github.ref == 'refs/heads/trunk'
 
     steps:
-
-      - name: Install apt-utils
-        run: sudo apt-get update -y && sudo apt-get install -y apt-utils
-
       - name: Check out the repo
-        # First, ensure that we have the latest version of repo #
         uses: actions/checkout@v2
 
-      - name: Build image
-        # Build Docker image jass-smart-infrastructure-webservice:COMMIT_ID #
-        run: docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }} --label "runnumber=${GITHUB_RUN_ID}"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
 
-      - name: Log into registry
-        # # Log on to GitHub Container Registry #
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          platforms: linux/arm64/v8
+          push: false
+          tags: ${{ env.IMAGE_NAME }}
+          labels: "runnumber=${GITHUB_RUN_ID}"
+          load: true
 
-      - name: Push image
-        # Push image onto the registry #
-        run: |
-          # Creating the image_id we want
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
-
-          # Change all uppercase to lowercase to follow convention of image_id
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-
-          # github.* is a context unique to GitHub Actions
-          # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
-
-          # Strip .git/ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-
-          # Finding the tag that triggered the workflow
-          # Strip "v" prefix from tag name
-          # [] - evaluates 'index' of booleans to true (1) or false (0) #
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-
-          # Use Docker's `latest` tag convention
-          [ "$VERSION" == "trunk" ] && VERSION=latest
-
-          # Finally, for a sanity check/reference, print image_id and version #
-          # This is always going to be ghcr.io/jass-2021/$IMAGE_NAME and latest #
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-
-          # Tag the local Docker $IMAGE_NAME with personalised image_id and `latest` tag#
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-
-          # Push the latest image to the registry!
-          docker push $IMAGE_ID:$VERSION
-
-      - name: Log out of registry
-        run: docker logout ghcr.io
 
   # Job # 5: #     ## DEPLOY ##
   deploy_to_raspberry:
     # Only executed once Docker image is successfully built and pushed to registry #
-    needs: [build_and_push_to_registry] #test_build,
+    needs: [build_and_push_to_registry] #, test_build]
 
 
     # Move Docker image from Registry to RPi #
@@ -223,7 +192,7 @@ jobs:
             sleep 1
 
             # Regex the new URL to ...?
-            sed -ri "s/(.*?proxy_pass http\:\/\/)(.+?)\:([[:digit:]]+)(.*)/\1$NEWCID\:$NEWPORT\5/" $NGINX_CONFIG_PATH
+            sed -ri "s/(.*?proxy_pass http\:\/\/)(.+?)\:([[:digit:]]+)(.*)/\1$NEWCID\:$NEWPORT\4/" $NGINX_CONFIG_PATH
 
             # --------------------------------------------------------
 
@@ -255,4 +224,3 @@ jobs:
 
           # String that contains a private key, stored on JASS-2021 secrets (OpenSSH format)
           key: ${{ secrets.TUM_RBP_1_SECRET }}
-      
