@@ -108,12 +108,13 @@ jobs:
       logged_in: 'false'
 
     steps:
-      - name: Check out the repo
-        # First, ensure that we have the latest version of repo #
-        uses: actions/checkout@v2
 
       - name: Install apt-utils
         run: apt-get update -y && apt-get install -y apt-utils
+        
+      - name: Check out the repo
+        # First, ensure that we have the latest version of repo #
+        uses: actions/checkout@v2
 
       - name: Build image
         # Build Docker image jass-smart-infrastructure-webservice:COMMIT_ID #
