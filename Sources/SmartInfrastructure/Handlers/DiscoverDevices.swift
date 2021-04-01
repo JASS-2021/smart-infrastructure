@@ -11,14 +11,14 @@ import ApodiniLIFX
 
 struct DiscoverDevices: Handler {
     @Environment(\.lifxDeviceManager) var lifxDeviceManager: LIFXDeviceManager
-    
-    
+
+
     func handle() -> EventLoopFuture<[Device]> {
         lifxDeviceManager.discoverDevices()
-            .map {
-                lifxDeviceManager.devices.map {
-                    Device($0)
+                .map {
+                    lifxDeviceManager.devices.map {
+                        Device($0)
+                    }
                 }
-            }
     }
 }

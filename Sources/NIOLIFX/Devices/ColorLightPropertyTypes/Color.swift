@@ -1,7 +1,7 @@
 /**
  An object that stores color data and opacity (alpha value).
  */
-struct Color {
+struct Color: Equatable {
     /**
      The red component of the `Color` object.
      
@@ -33,7 +33,7 @@ struct Color {
     /**
      The hue component of the `Color` object.
      
-     Values between 0.0 and 1.0 are inside the sRGB color gamut.
+     Values between 0.0 and 360.0 are inside the sRGB color gamut.
      */
     var hue: Double {
         Color.converte(red: red, green: green, blue: blue).hue
@@ -77,7 +77,8 @@ struct Color {
     
     /**
      Initializes a new `Color` object.
-     Values for `hue`, `saturation`, and `brightness` between 0.0 and 1.0 are inside the sRGB color gamut.
+     Values for `hue` must be between 0.0 and 260.0 to be inside the sRGB color gamut.
+     Values for `saturation`, and `brightness` must be between 0.0 and 1.0 to be inside the sRGB color gamut.
      Values for `alpha` smaller then 0.0 are interpeted as 0.0, values greater then 1.0 are interpeted as 1.0.
      
      - parameters:
@@ -101,28 +102,29 @@ struct Color {
      - returns: The HSB representation.
      */
     private static func converte(red: Double, green: Double, blue: Double) -> (hue: Double, saturation: Double, brightness: Double) {
-        let maxComponent = max(red, green, blue)
-        let minComponent = min(red, green, blue)
-        let delta = maxComponent - minComponent
+        let min = Swift.min(red, green, blue)
+        let max = Swift.max(red, green, blue)
         
-        guard !(delta == 0.0) else {
-            return (0, 0, 0)
+        let delta = max - min
+        
+        var hue: Double = 0
+        if delta != 0 {
+            if red == max {
+                hue = ((green - blue) / delta).truncatingRemainder(dividingBy: 6)
+            } else if green == max {
+               hue = 2 + (blue - red) / delta
+            } else {
+                hue = 4 + (red - green) / delta
+            }
+            
+            hue *= 60
+            if hue < 0 {
+               hue += 360
+            }
         }
         
-        let hue: Double
-        switch maxComponent {
-        case red:
-            hue = (abs(((green - blue) / delta).truncatingRemainder(dividingBy: 6.0)) / 6.0)
-        case green:
-            hue = (2.0 + (blue - red) / delta) / 6.0
-        case blue:
-            hue = (4.0 + (red - green) / delta) / 6.0
-        default: fatalError("Unexpected behaviour, `maxComponent` is neither `red`, `green` or `blue`")
-        }
-        
-        let brightness = (maxComponent + minComponent) / 2.0
-        
-        let saturation = delta / (1.0 - abs((2.0 * brightness) - 1))
+        let saturation = max == 0 ? 0 : (delta / max)
+        let brightness = (min + max) / 2
         
         return (hue, saturation, brightness)
     }
