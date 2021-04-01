@@ -53,16 +53,17 @@ jobs:
     name: Prerequisite install ~ apt-utils 
     runs-on: ubuntu-latest
 
-    # GitHub Action to fetch a shallow clone of various dependencies #
-    - uses: actions/checkout@v2
-
-    # Is currently not being used? We used this to fix (github.ref == ??) boolean bug #
-    - name: Debug
-      run: echo "${{ github.ref }}"
-
-    # Dependency Alert : apt-utils #
-    - name: Install apt-utils
-      run: sudo apt-get update -y && sudo apt-get install -y apt-utils
+    steps:
+      # GitHub Action to fetch a shallow clone of various dependencies #
+      - uses: actions/checkout@v2
+  
+      # Is currently not being used? We used this to fix (github.ref == ??) boolean bug #
+      - name: Debug
+        run: echo "${{ github.ref }}"
+  
+      # Dependency Alert : apt-utils #
+      - name: Install apt-utils
+        run: sudo apt-get update -y && sudo apt-get install -y apt-utils
   
   # Job # 2: #
   testing:   
