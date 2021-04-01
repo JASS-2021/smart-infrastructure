@@ -185,15 +185,12 @@ jobs:
             # log on into docker using github secrets #
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            # set the version variable to the newest version #
-            VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-            # Sanity check that it is the trunk #
-            echo VERSION=$VERSION
-
-            REGISTRY_ADDR=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$VERSION
+            REGISTRY_ADDR=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest
 
             # Change all uppercase to lowercase to follow convention of repository name
             REGISTRY_ADDR=$(echo $REGISTRY_ADDR | tr '[A-Z]' '[a-z]')
+
+            echo REGISTRY_ADDR=$REGISTRY_ADDR
 
             # Pull the image out of where we stored it
             docker pull $REGISTRY_ADDR
@@ -201,15 +198,15 @@ jobs:
             # -----------------------------------------------------
 
             # Store the old port and container_id to make sure we can find, stop and rm it
-            NGINX_CONFIG_PATH="conf.d/nginx.conf"
-            OLDPORT="$(sed -n 's/proxy_pass http\:\/\/?:(.+?)\:(.+?)/\1/p' $NGINX_CONFIG_PATH)"
-            OLDCID="$(sed -n 's/proxy_pass http\:\/\/(.+?)\:(.+?)/\1/p' $NGINX_CONFIG_PATH)"
+            NGINX_CONFIG_PATH="nginx/conf.d/nginx.conf"
+            OLDPORT="$(grep -hnr 'proxy_pass' $NGINX_CONFIG_PATH | sed -r 's/.*?proxy_pass http\:\/\/.+?\:([[:digit:]]+).*/\1/')"
+            OLDCID="$(grep -hnr 'proxy_pass' $NGINX_CONFIG_PATH | sed -r 's/.*?proxy_pass http\:\/\/(.+?)\:[[:digit:]]+.*/\1/')"
 
             # Initialise ISINIT as false.
             ISINIT=false
             # if container hasn't been set up yet, then OLDCID is just IP of localhost.#
             # and then we set ISINIT to true. #
-            ["$OLDCID" == "127.0.0.1"] && ISINIT=true
+            [ $OLDCID == "127.0.0.1" ] && ISINIT=true
 
             # Set the old url to be this:
             OLDURL="http://$OLDCID:$OLDPORT"
