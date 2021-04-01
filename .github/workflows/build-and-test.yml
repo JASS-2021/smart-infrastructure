@@ -109,7 +109,7 @@ jobs:
   # Job # 3: #
   build_and_push_to_registry:
     # Only executed after codebase passes all tests #
-    needs: [test_build]
+    needs: [prereqs, test_build]
 
     # Build image and push to GitHub registry if on correct branch #
     name: Build and Push Docker Image # to GitHub Container Registry
