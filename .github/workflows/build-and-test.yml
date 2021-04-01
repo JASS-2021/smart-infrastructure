@@ -176,6 +176,11 @@ jobs:
             # Change all uppercase to lowercase to follow convention of repository name
             REGISTRY_ADDR=$(echo $REGISTRY_ADDR | tr '[A-Z]' '[a-z]')
 
+            IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+
+            # Change all uppercase to lowercase to follow convention of image_id
+            IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
             echo REGISTRY_ADDR=$REGISTRY_ADDR
 
             # Pull the image out of where we stored it
@@ -210,8 +215,8 @@ jobs:
             ([ $OLDPORT == "8090" ] && NEWPORT=8092) || NEWPORT=8091
             # New container id is whatever id we get when running the newest image,
             # after syncing up with current container.
-            $ISINIT || NEWCID=$(docker run -d -p $NEWPORT:8080 ${{ env.IMAGE_NAME }}:latest -e SYNCHOST=$OLDURL)
-            $ISINIT && NEWCID=$(docker run -d -p $NEWPORT:8080 ${{ env.IMAGE_NAME }}:latest)
+            $ISINIT || NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_ID:latest -e SYNCHOST=$OLDURL)
+            $ISINIT && NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_ID:latest)
 
             # ... here we are waiting for the sync to happen.
             # How long does that take? 1 second?
