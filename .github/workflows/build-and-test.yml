@@ -135,8 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     
     # if this conditional fails, none of the steps are executed #
-    if: github.ref == 'refs/heads/trunk'
-    if: [${{ needs.credentials_helper_set_up.outputs.cred-secure }} == "true"]
+    if: github.ref == 'refs/heads/trunk' &&  [${{ needs.credentials_helper_set_up.outputs.cred-secure }} == "true"]
 
     steps:
       - name: Check out the repo
@@ -244,7 +243,7 @@ jobs:
 
       # Step 4: Perform deployment via SSH
       - name: Deploy with SSH
-        if: [${{ needs.credentials_helper_set_up.outputs.cred-secure }} == true]
+        if: ${{ needs.credentials_helper_set_up.outputs.cred-secure }}=='true'
         uses: fifsky/ssh-action@v0.0.5
         with:
           # Command to execute on the remote server, i.e. another mess 
