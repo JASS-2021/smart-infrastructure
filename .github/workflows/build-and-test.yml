@@ -203,10 +203,10 @@ jobs:
 
             # -----------------------------------------------------
 
-            # Store the old port and container_id to make sure we can find, stop and rm it later.
-            PATH_TO_PUSH_TO="conf.d/nginx.conf"
-            OLDPORT="$(sed -n 's/proxy_pass http\:\/\/?:(.+?)\:(.+?)/\1/p' $PATH_TO_PUSH_TO)"
-            OLDCID="$(sed -n 's/proxy_pass http\:\/\/(.+?)\:(.+?)/\1/p' $PATH_TO_PUSH_TO)"
+            # Store the old port and container_id to make sure we can find, stop and rm it
+            NGINX_CONFIG_PATH="conf.d/nginx.conf"
+            OLDPORT="$(sed -n 's/proxy_pass http\:\/\/?:(.+?)\:(.+?)/\1/p' $NGINX_CONFIG_PATH)"
+            OLDCID="$(sed -n 's/proxy_pass http\:\/\/(.+?)\:(.+?)/\1/p' $NGINX_CONFIG_PATH)"
             
             # Initialise ISINIT as false.
             ISINIT=false
@@ -227,30 +227,30 @@ jobs:
             NEWPORT=($OLDPORT=="8091"?"8092":"8091")
             # New container id is whatever id we get when running the newest image, 
             # after syncing up with current container.
-            NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_NAME:$VERSION -e SYNCHOST=$OLDURL)
+            # NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_NAME:$VERSION -e SYNCHOST=$OLDURL)
 
-            # ... here we are waiting for the sync to happen. 
-            # How long does that take? 1 second?
-            sleep 1
+            # # ... here we are waiting for the sync to happen. 
+            # # How long does that take? 1 second?
+            # sleep 1
 
-            # Regex the new URL to ...?
-            sed -r -i -e "s/(proxy_pass http://)(.+?):(.+?)/\1$NEWCID\:$NEWPORT/" $PATH_TO_PUSH_TO
+            # # Regex the new URL to ...?
+            # sed -r -i -e "s/(proxy_pass http://)(.+?):(.+?)/\1$NEWCID\:$NEWPORT/" $NGINX_CONFIG_PATH
 
-            # --------------------------------------------------------
+            # # --------------------------------------------------------
 
-            # Reload the nginx container, refer to wiki.
-            docker exec infrastructure_nginx /etc/init.d/nginx reload
+            # # Reload the nginx container, refer to wiki.
+            # docker exec infrastructure_nginx /etc/init.d/nginx reload
             
-            # ----------------------------------------------------
-            # STOP THE OLD CONTAINER (if it exists)
+            # # ----------------------------------------------------
+            # # STOP THE OLD CONTAINER (if it exists)
 
-            # ISINIT is false => stop old container #
-            # ISINIT is true => there was never a container present, just pass through #
-            $ISINIT || docker container stop $OLDCID
-            $ISINIT || docker container rm $OLDCID
-            $ISINIT || docker image rm $OLDIMGID
+            # # ISINIT is false => stop old container #
+            # # ISINIT is true => there was never a container present, just pass through #
+            # $ISINIT || docker container stop $OLDCID
+            # $ISINIT || docker container rm $OLDCID
+            # $ISINIT || docker image rm $OLDIMGID
 
-            # ---------------------------------------------------- 
+            # # ---------------------------------------------------- 
 
             # Log out of registry 
             docker logout ghcr.io
