@@ -40,10 +40,6 @@ env:
   # The name of our Docker image to deploy
   IMAGE_NAME: jass-smart-infrastructure-webservice
 
-  # Truth value to check if credentials are secured yet: 
-  CRED_SECURE: false
-
-
 # Jobs the pipeline is supposed to run #
 jobs:
 
@@ -119,7 +115,7 @@ jobs:
     steps:
       - name: Run sh script
         run: |
-          chmod +x ./cred_helper.sh
+          chmod +x ~/cred_helper.sh
           sudo ./cred_helper.sh
       - id: run_cred_helper_sh
         run: echo "::set-output name=cred-secure::true"
