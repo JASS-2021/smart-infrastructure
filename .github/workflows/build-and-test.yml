@@ -163,47 +163,10 @@ jobs:
         if: ${{ steps.logging_in.outputs.logged_in }}
         run: docker logout ghcr.io 
 
-  # Job # 4: #
-  join_the_vpn:
-    # Once the Docker image is built and pushed, we need to connect to the VPN... #
-    needs: [ build_and_push_to_registry] #test_build,
-
-    # As described by JP (github@jpbernius) in Munich.md, connect to VPN #
-    name: Connect to the VPN, Steps 1-3.
-
-    runs-on: ubuntu-latest
-
-    steps:
-      # As described by JP (github@jpbernius) in https://github.com/JASS-2021/JASS-2021/blob/trunk/Munich.md#github-action-tum-vpn-access
-
-      # Step 1: Install vpnc
-      - name: Install vpnc
-        run: sudo apt-get install vpnc
-
-      # Step 2: Configure LRZ VPN
-      - name: Configure LRZ VPN
-        run: |
-          echo "${{ secrets.MWN_VPNC_CONFIG }}" > lrz.conf
-          sudo mkdir -p /etc/vpnc
-          sudo mv lrz.conf /etc/vpnc/
-          sudo chmod 600 /etc/vpnc/lrz.conf
-
-      # Step 3a: Connect to VPN 
-      - name: Connect VPN
-        run: sudo vpnc lrz
-      
-      # Step 3b: Test the connection
-      - name: Ping sophos.lrz.de (only accessible inside MWN)
-        id: vpn-test
-        run: |
-          ping -c 5 sophos.lrz.de
-          echo "::set-output name=success::true"
-
   # Job # 5: #     ## DEPLOY ##
   deploy_to_raspberry:
     # Only executed once Docker image is successfully built and pushed to registry #
-    # Wait until we have connected to MVN #
-    needs: [build_and_push_to_registry, join_the_vpn] #test_build,
+    needs: [build_and_push_to_registry] #test_build,
     
 
     # Move Docker image from Registry to RPi #
@@ -215,11 +178,8 @@ jobs:
     if: github.ref == 'refs/heads/trunk'
 
     steps:
-      # As described by JP (github@jpbernius) in https://github.com/JASS-2021/JASS-2021/blob/trunk/Munich.md#github-action-tum-vpn-access
 
-      # We have already done steps 1-3.
-
-      # Step 4: Perform deployment via SSH
+      # Perform deployment via SSH
       - name: Deploy with SSH
         uses: fifsky/ssh-action@v0.0.5
         with:
@@ -311,12 +271,4 @@ jobs:
 
           # String that contains a private key, stored on JASS-2021 secrets (OpenSSH format)
           key: ${{ secrets.TUM_RBP_1_SECRET }}
-
-      # Step 5: Disconnect VPN regardless Docker image pushed #
-      - name: Disconnect VPN
-        if: ${{ always() }}
-        run: |
-          vpnc-disconnect
-          rm /etc/vpnc/lrz.conf
-          
       
