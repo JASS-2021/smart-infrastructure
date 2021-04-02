@@ -7,12 +7,10 @@ COPY Package.* ./
 RUN swift package resolve
 
 # The usual copying over
-COPY Sources ./Sources
 COPY Tests ./Tests
-RUN swift package resolve
+COPY Sources ./Sources
 
-
-RUN swift build
+RUN swift build --configuration release
 
 # Exposes ports for Docker container
 EXPOSE 8080

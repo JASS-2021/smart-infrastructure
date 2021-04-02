@@ -44,39 +44,39 @@ env:
 # Jobs the pipeline is supposed to run #
 jobs:
 
-#  # Job # 1: #
-#  test_build:
-#    name: Linux test build
-#
-#    # Setup build environment #
-#    container:
-#      image: swift:focal
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#    - uses: actions/checkout@v2
-#
-#    # Dependency #
-#    - name: Install libsqlite3
-#      run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
-#
-#    - uses: actions/cache@v2
-#      # Caching to make subsequent deployment faster #
-#      with:
-#        path: .build
-#        key: ${{ runner.os }}-focal-spm-cache-${{ hashFiles('Package.resolved') }}
-#
-#    - name: Check Swift version
-#      # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
-#      run: swift --version
-#
-#    - name: Build & Test
-#      run: swift test --configuration debug --enable-test-discovery
+  #  # Job # 1: #
+  #  test_build:
+  #    name: Linux test build
+  #
+  #    # Setup build environment #
+  #    container:
+  #      image: swift:focal
+  #    runs-on: ubuntu-latest
+  #
+  #    steps:
+  #    - uses: actions/checkout@v2
+  #
+  #    # Dependency #
+  #    - name: Install libsqlite3
+  #      run: apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
+  #
+  #    - uses: actions/cache@v2
+  #      # Caching to make subsequent deployment faster #
+  #      with:
+  #        path: .build
+  #        key: ${{ runner.os }}-focal-spm-cache-${{ hashFiles('Package.resolved') }}
+  #
+  #    - name: Check Swift version
+  #      # ApodiniLIFX/lifx/main.swift demands swift ver >= 5.3.0
+  #      run: swift --version
+  #
+  #    - name: Build & Test
+  #      run: swift test --configuration debug --enable-test-discovery
 
   # Job # 3: #
   build_and_push_to_registry:
     # Only executed after codebase passes all tests #
-#    needs: [test_build]
+    #    needs: [test_build]
 
     # Build image and push to GitHub registry if on correct branch #
     name: Build and Push Docker Image # to GitHub Container Registry
@@ -95,7 +95,15 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
-          platforms: all
+          platforms: arm64
+
+      - uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-single-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-single-buildx
+
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@master
@@ -111,12 +119,38 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}
           labels: "runnumber=${GITHUB_RUN_ID}"
           load: true
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
 
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Log into registry
+        # This is where you will update the PATH to GITHUB_TOKEN
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push image
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "trunk" ] && VERSION=latest
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
 
   # Job # 5: #     ## DEPLOY ##
   deploy_to_raspberry:
     # Only executed once Docker image is successfully built and pushed to registry #
-    needs: [build_and_push_to_registry] #, test_build]
+    needs: [ build_and_push_to_registry ] #, test_build]
 
 
     # Move Docker image from Registry to RPi #
