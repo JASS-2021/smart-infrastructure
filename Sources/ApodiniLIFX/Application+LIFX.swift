@@ -14,17 +14,17 @@ extension Application {
     struct LIFXDeviceManagerKey: StorageKey {
         typealias Value = LIFXDeviceManager
     }
-    
-    
+
+
     /// Holds the `LIFXDeviceManager` of the web service.
     public internal(set) var lifxDeviceManager: LIFXDeviceManager {
         get {
             guard let lifxDeviceManager = self.storage[LIFXDeviceManagerKey.self] else {
                 fatalError(
-                    "You must use a `LIFXConfiguration` in your `WebService` configuration before you can access the `lifxDeviceManager`."
+                        "You must use a `LIFXConfiguration` in your `WebService` configuration before you can access the `lifxDeviceManager`."
                 )
             }
-            
+
             return lifxDeviceManager
         }
         set {
