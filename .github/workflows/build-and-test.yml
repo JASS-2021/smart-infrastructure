@@ -113,14 +113,18 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build
-        run: |
-          docker buildx build \
-          --platform linux/arm64/v8 \
-          --output "type=docker,push=false" \
-          --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
-          --tag "${{env.IMAGE_NAME}}" \
-          --file ./Dockerfile ./
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          platforms: linux/arm64/v8
+          push: false
+          load: true
+          tags: jass-smart-infrastructure-webservice
+          labels: "runnumber=${GITHUB_RUN_ID}"
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
 
       - name: Move cache
         run: |
