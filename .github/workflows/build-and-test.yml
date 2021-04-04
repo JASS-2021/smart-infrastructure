@@ -101,12 +101,17 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@master
 
-      - uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-spm
+#      - uses: actions/cache@v2
+#        with:
+#          path: /tmp/.buildx-cache
+#          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+#          restore-keys: |
+#            ${{ runner.os }}-spm
+      - name: Generate cache filename
+        id: filenamegen
+        run: |
+          FILENAME=$( echo ${{ github.event.repository.name}}-${{ github.ref }} | sed 's/\//-/g' )-$( echo ${{ env.DOCKER_TARGET_PLATFORM }} | sed 's/\//-/g' )
+          echo "::set-output name=filename::$FILENAME"
 
       - name: Log into registry
         # This is where you will update the PATH to GITHUB_TOKEN
@@ -118,18 +123,21 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           file: ./Dockerfile
-          platforms: linux/arm64/v8
+          platforms: ${{ env.DOCKER_TARGET_PLATFORM }}
           push: false
           load: true
           tags: jass-smart-infrastructure-webservice
           labels: "runnumber=${GITHUB_RUN_ID}"
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+#          cache-from: type=local,src=/tmp/.buildx-cache
+#          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          build-args: |
+            FILENAME=${{ steps.filenamegen.outputs.filename }}
+            TOKEN=${{ secrets.CACHE_TOKEN }}
 
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+#      - name: Move cache
+#        run: |
+#          rm -rf /tmp/.buildx-cache
+#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Log into registry
         # This is where you will update the PATH to GITHUB_TOKEN
@@ -222,7 +230,7 @@ jobs:
             ([ $OLDPORT == "8090" ] && NEWPORT=8092) || NEWPORT=8091
             # New container id is whatever id we get when running the newest image,
             # after syncing up with current container.
-            $ISINIT || NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_ID:latest -e SYNCHOST=$OLDURL)
+            $ISINIT || NEWCID=$(docker run -d -p  $NEWPORT:8080 -e SYNCHOST=$OLDURL $IMAGE_ID:latest)
             $ISINIT && NEWCID=$(docker run -d -p $NEWPORT:8080 $IMAGE_ID:latest)
 
             # ... here we are waiting for the sync to happen.
