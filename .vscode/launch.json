@@ -5,7 +5,7 @@
             "type": "lldb",
             "request": "launch",
             "name": "Run",
-            "program": "${workspaceFolder}/.build/debug/ApodiniLIFXExample",
+            "program": "${workspaceFolder}/.build/debug/SmartInfrastructure",
             "args": [],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build"
@@ -14,7 +14,7 @@
             "type": "lldb",
             "request": "launch",
             "name": "Test",
-            "program": "${workspaceFolder}/.build/debug/ApodiniLIFXExamplePackageTests.xctest",
+            "program": "${workspaceFolder}/.build/debug/SmartInfrastructurePackageTests.xctest",
             "preLaunchTask": "buildtests"
         }
     ]
