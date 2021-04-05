@@ -6,6 +6,10 @@ import ApodiniREST
 
 
 struct ExampleWebService: WebService {
+    
+    var junctionState = JunctionState()
+    var scheduleState = ScheduleState()
+    
     var configuration: Configuration {
         // We expose a RESTful API that is described by an OpenAPI description
         ExporterConfiguration()
@@ -17,7 +21,7 @@ struct ExampleWebService: WebService {
         
         // The DiscoveryJob should run every minute
         Schedule(DiscoveryJob(), on: "* * * * *", \KeyStore.discoveryJob)
-        Schedule(ClusterManagementJob(), on: "* * * * *", \KeyStore.clusterManagementJob)
+        Schedule(ClusterManagementJob(junctionState: junctionState, scheduleState: scheduleState), on: "* * * * *", \KeyStore.clusterManagementJob)
     }
     
     var content: some Component {
@@ -27,6 +31,8 @@ struct ExampleWebService: WebService {
         }
         DevicesComponents()
         ColorLightComponents()
+        ScheduleComponents(scheduleState: scheduleState)
+        TrafficLightInformationComponents(junctionState: junctionState)
     }
 }
 

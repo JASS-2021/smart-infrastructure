@@ -1,4 +1,4 @@
-{ "junctions": 
+{ "junctions":
    [
       {
          "junction_name":"junction_1",
@@ -11,11 +11,11 @@
                      "color":"green"
                   },
                   {
-                     "time":25,
+                     "time":40,
                      "color":"yellow"
                   },
                   {
-                     "time":28,
+                     "time":43,
                      "color":"red"
                   },
                   {
@@ -32,19 +32,19 @@
                      "color":"red"
                   },
                   {
-                     "time":30,
+                     "time":44,
                      "color":"yellow"
                   },
                   {
-                     "time":33,
+                     "time":46,
                      "color":"green"
                   },
                   {
-                     "time":50,
+                     "time":53,
                      "color":"yellow"
                   },
                   {
-                     "time":53,
+                     "time":55,
                      "color":"red"
                   }
                ]
@@ -57,11 +57,11 @@
                      "color":"green"
                   },
                   {
-                     "time":25,
+                     "time":40,
                      "color":"yellow"
                   },
                   {
-                     "time":28,
+                     "time":43,
                      "color":"red"
                   },
                   {
@@ -80,19 +80,19 @@
                "schedule":[
                   {
                      "time":0,
-                     "color":"yellow"
-                  },
-                  {
-                     "time":3,
                      "color":"green"
                   },
                   {
-                     "time":14,
+                     "time":40,
                      "color":"yellow"
                   },
                   {
-                     "time":17,
+                     "time":43,
                      "color":"red"
+                  },
+                  {
+                     "time":56,
+                     "color":"yellow"
                   }
                ]
             },
@@ -104,19 +104,19 @@
                      "color":"red"
                   },
                   {
-                     "time":20,
+                     "time":44,
                      "color":"yellow"
                   },
                   {
-                     "time":23,
+                     "time":46,
                      "color":"green"
                   },
                   {
-                     "time":34,
+                     "time":53,
                      "color":"yellow"
                   },
                   {
-                     "time":37,
+                     "time":55,
                      "color":"red"
                   }
                ]
@@ -126,7 +126,7 @@
                "schedule":[
                   {
                      "time":0,
-                     "color":"red"
+                     "color":"green"
                   },
                   {
                      "time":40,
@@ -134,15 +134,11 @@
                   },
                   {
                      "time":43,
-                     "color":"green"
-                  },
-                  {
-                     "time":54,
-                     "color":"yellow"
-                  },
-                  {
-                     "time":57,
                      "color":"red"
+                  },
+                  {
+                     "time":56,
+                     "color":"yellow"
                   }
                ]
             }
@@ -150,4 +146,5 @@
       }
    ]
 }
+
 

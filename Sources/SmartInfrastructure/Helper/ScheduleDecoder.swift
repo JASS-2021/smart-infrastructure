@@ -2,9 +2,9 @@ import Foundation
 
 struct ScheduleDecoder {
     
-    func loadJson() -> [ScheduleItem]? {
+    func loadJson(_ schedule: String) -> [ScheduleItem]? {
         
-        if let url = Bundle.module.resourceURL?.appendingPathComponent("schedule.json") {
+        if let url = Bundle.module.resourceURL?.appendingPathComponent("\(schedule).json") {
             do {
                 let data = try Data(contentsOf: url)
                 print(data)
@@ -14,6 +14,7 @@ struct ScheduleDecoder {
                 return turnReadableToUsable(junctionSchedule: jsonData.junctions)
             } catch {
                 print("error:\(error)")
+                return nil
             }
         }
         let scheduleItem = ScheduleItem(time: 2, actions: [Action(color: "red", trafficLightName: "trafficLight1", junctionName: "duckie1")])
@@ -38,35 +39,4 @@ struct ScheduleDecoder {
         }
         return Array(map.values)
     }
-}
-
-struct Cluster: Decodable {
-    var junctions: [Junction]
-}
-
-struct Junction: Decodable {
-    var junctionName: String
-    var trafficLights: [TrafficLight]
-}
-
-struct TrafficLight: Decodable {
-    var lightName: String
-    var schedule: [LightSchedule]
-}
-
-struct LightSchedule: Decodable {
-    var time: Int
-    var color: String
-}
-
-
-struct ScheduleItem: Decodable {
-    var time: Int
-    var actions: [Action]
-}
-
-struct Action: Decodable {
-    var color: String
-    var trafficLightName: String
-    var junctionName: String
 }
