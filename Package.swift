@@ -24,8 +24,7 @@ let package = Package(
         .package(name: "swift-argument-parser", url: "https://github.com/apple/swift-argument-parser", from: "0.3.2"),
         .package(name: "swift-log", url: "https://github.com/apple/swift-log.git", from: "1.4.0"),
         .package(name: "swift-nio", url: "https://github.com/apple/swift-nio.git", from: "2.25.1"),
-        .package(name: "swift-nio-ip", url: "https://github.com/PSchmiedmayer/Swift-NIO-IP.git", from: "0.0.1"),
-        .package(url: "https://github.com/OpenCombine/OpenCombine.git", .upToNextMinor(from: "0.11.0")),
+        .package(name: "swift-nio-ip", url: "https://github.com/PSchmiedmayer/Swift-NIO-IP.git", from: "0.0.1")
     ],
     targets: [
         .target(
@@ -35,9 +34,7 @@ let package = Package(
                 .product(name: "ApodiniJobs", package: "Apodini"),
                 .product(name: "ApodiniREST", package: "Apodini"),
                 .product(name: "ApodiniOpenAPI", package: "Apodini"),
-                .target(name: "ApodiniLIFX"),
-                .product(name: "OpenCombine", package: "OpenCombine"),
-                .product(name: "OpenCombineFoundation", package: "OpenCombine")
+                .target(name: "ApodiniLIFX")
             ],
             resources: [
                 .copy("Resources/schedule.json"),

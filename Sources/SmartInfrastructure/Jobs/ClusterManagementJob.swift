@@ -4,7 +4,6 @@ import ApodiniLIFX
 
 
 struct ClusterManagementJob: Job {
-    
     @Environment(\.lifxDeviceManager) var lifxDeviceManager: LIFXDeviceManager
     @Environment(\.eventLoopGroup) var eventLoopGroup: EventLoopGroup
     
@@ -32,6 +31,7 @@ struct ClusterManagementJob: Job {
                     }
                     trafficLightState.canGo = action.color == "green"
                     junctionState.junctionMap.updateValue(trafficLightState, forKey: action.trafficLightName)
+
                 }
             }
         }

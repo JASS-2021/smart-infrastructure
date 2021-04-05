@@ -1,4 +1,4 @@
-FROM swift:latest
+FROM swift:5.3.3
 # Dependency: libsqlite3
 RUN apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev
 
@@ -18,4 +18,4 @@ RUN swift build
 EXPOSE 8080
 EXPOSE 56700:56700/udp
 
-CMD swift run
+CMD swift run --skip-build --skip-update
