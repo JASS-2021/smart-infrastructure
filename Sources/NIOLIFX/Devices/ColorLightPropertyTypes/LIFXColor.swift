@@ -34,23 +34,29 @@ extension ColorLight.LIFXColor {
         }
     }
     
+    public init(red: Double, green: Double, blue: Double) {
+        self = ColorLight.LIFXColor(
+            color: Color(red: red, green: green, blue: blue),
+            colorTemperature: 5000)
+    }
+    
     public static var red = ColorLight.LIFXColor(
-        color: Color.init(red: 1.0, green: 0.0, blue: 0.0),
+        color: Color(red: 1.0, green: 0.0, blue: 0.0),
         colorTemperature: 5000
     )
     
     public static var yellow = ColorLight.LIFXColor(
-        color: Color.init(red: 1.0, green: 1.0, blue: 0.0),
+        color: Color(red: 1.0, green: 1.0, blue: 0.0),
         colorTemperature: 5000
     )
     
     public static var green = ColorLight.LIFXColor(
-        color: Color.init(red: 0.0, green: 1.0, blue: 0.0),
+        color: Color(red: 0.0, green: 1.0, blue: 0.0),
         colorTemperature: 5000
     )
     
     public static var standby = ColorLight.LIFXColor(
-        color: Color.init(red: 0.0, green: 0.0, blue: 1.0),
+        color: Color(red: 0.0, green: 0.0, blue: 1.0),
         colorTemperature: 5000
     )
 }

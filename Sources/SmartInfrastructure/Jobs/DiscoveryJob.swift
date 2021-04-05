@@ -12,12 +12,13 @@ import ApodiniLIFX
 
 struct KeyStore: EnvironmentAccessible {
     var discoveryJob: DiscoveryJob
+    var clusterManagementJob: ClusterManagementJob
 }
 
 
 struct DiscoveryJob: Job {
     @Environment(\.lifxDeviceManager) var lifxDeviceManager: LIFXDeviceManager
-
+    
     func run() {
         lifxDeviceManager.discoverDevices()
     }
