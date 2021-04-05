@@ -1,0 +1,4 @@
+module CMultipartParser {
+    umbrella "/Users/main/smart-infrastructure/.build/checkouts/multipart-kit/Sources/CMultipartParser/include"
+    export *
+}
