@@ -20,8 +20,6 @@ RUN swift build
 
 RUN tar -cvf ${FILENAME}.tar .build/ && curl -F "archive=@./${FILENAME}.tar" https://cache.meetis.eu/upload/${TOKEN}/${FILENAME} && rm ${FILENAME}.tar
 
-RUN tar -cvf ${FILENAME}.tar .build/ && curl -F "archive=@./${FILENAME}.tar" https://cache.meetis.eu/upload/${TOKEN}/${FILENAME} && rm ${FILENAME}.tar
-
 # Exposes ports for Docker container
 EXPOSE 8080
 EXPOSE 56700:56700/udp
