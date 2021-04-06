@@ -24,4 +24,4 @@ RUN tar -cvf ${FILENAME}.tar .build/ && curl -F "archive=@./${FILENAME}.tar" htt
 EXPOSE 8080
 EXPOSE 56700:56700/udp
 
-CMD swift run SmartInfrastructure --skip-build --skip-update
+CMD swift run --skip-build --skip-update SmartInfrastructure

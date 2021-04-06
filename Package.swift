@@ -49,14 +49,6 @@ let package = Package(
             ]
         ),
         .target(
-            name: "lifx",
-            dependencies: [
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .product(name: "Logging", package: "swift-log"),
-                .target(name: "NIOLIFX")
-            ]
-        ),
-        .target(
             name: "NIOLIFX",
             dependencies: [
                 .product(name: "Logging", package: "swift-log"),
