@@ -12,10 +12,13 @@ struct SwitchSchedule: Handler {
     var scheduleState: ScheduleState
     
     func handle() throws -> Bool {
-        guard let schedule = scheduleDecoder.loadJson(scheduleName) else {
-            return false
+        
+        if(scheduleName != scheduleState.scheduleName) {
+            guard let schedule = scheduleDecoder.loadJson(scheduleName) else {
+                return false
+            }
+            scheduleState.schedule = schedule
         }
-        scheduleState.schedule = schedule
         return true
     }
 }

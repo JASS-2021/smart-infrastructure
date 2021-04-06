@@ -1,5 +1,12 @@
 final class ScheduleState {
     var schedule = [ScheduleItem]()
+    var standby = false
+    var scheduleName = ""
+    
+    init(scheduleName: String) {
+        self.scheduleName = scheduleName
+        self.schedule = ScheduleDecoder().loadJson(scheduleName)!
+    }
 }
 
 

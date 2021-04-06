@@ -8,7 +8,7 @@ import ApodiniREST
 struct ExampleWebService: WebService {
     
     var junctionState = JunctionState()
-    var scheduleState = ScheduleState()
+    var scheduleState = ScheduleState(scheduleName: "schedule")
     
     var configuration: Configuration {
         // We expose a RESTful API that is described by an OpenAPI description
@@ -20,8 +20,12 @@ struct ExampleWebService: WebService {
         LIFXConfiguration(interfaceName: "en0", logLevel: .info)
         
         // The DiscoveryJob should run every minute
-        Schedule(DiscoveryJob(), on: "* * * * *", \KeyStore.discoveryJob)
-        Schedule(ClusterManagementJob(junctionState: junctionState, scheduleState: scheduleState), on: "* * * * *", \KeyStore.clusterManagementJob)
+        Schedule(DiscoveryJob(),
+                 on: "* * * * *",
+                 \KeyStore.discoveryJob)
+        Schedule(ClusterManagementJob(junctionState: junctionState, scheduleState: scheduleState),
+                 on: "* * * * *",
+                 \KeyStore.clusterManagementJob)
     }
     
     var content: some Component {

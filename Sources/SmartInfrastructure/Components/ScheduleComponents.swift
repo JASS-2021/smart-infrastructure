@@ -7,6 +7,10 @@ struct ScheduleComponents: Component {
         Group("switch-schedule") {
             SwitchSchedule(scheduleState: scheduleState)
                 .operation(.update)
+            Group("standby") {
+                Standby(scheduleState: scheduleState)
+                    .operation(.update)
+            }
         }
     }
 }
